@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASR Services AI Screener — Hiring 10x Faster</title>
+  <meta name="description" content="AI-powered resume screening that ranks candidates against your job description in seconds.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+</head>
+
+<body>
+  <div class="mesh-backdrop"></div>
+  <div class="container">
+    <nav class="navbar animate-fadeInUp">
+      <div class="navbar-brand">
+        <div class="navbar-brand-icon">📄</div>
+        <span>ASR Services AI Screener</span>
+      </div>
+      <div class="navbar-right">
+        <a href="#features" class="navbar-link">Features</a>
+        <a href="#login" class="btn btn-primary btn-sm" style="padding: 8px 20px;">Get Started</a>
+      </div>
+    </nav>
+
+    <main class="page-hero">
+      <div class="text-center animate-fadeInUp animate-delay-1" style="margin-bottom: 60px;">
+        <span class="badge mb-2">The Future of Hiring is AI</span>
+        <h1 style="margin-bottom: 24px;">Unlock the Power of <br><span style="color:var(--accent-primary);">Elite
+            Screening</span></h1>
+        <p class="subtitle">Identify top-tier talent with precision AI analysis. Experience a new standard in
+          specialized candidate selection.</p>
+        <div style="margin-top: 32px; display: flex; gap: 12px; justify-content: center;">
+          <a href="#login" class="btn btn-primary btn-lg">Start Screening Now</a>
+          <a href="#features" class="btn btn-secondary btn-lg">How it Works</a>
+        </div>
+      </div>
+
+      <!-- Feature Grid -->
+      <div id="features" class="feature-grid animate-fadeInUp animate-delay-2" style="margin-bottom: 80px;">
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h4 class="feature-title">Ultra Fast Analysis</h4>
+          <p class="feature-desc">Process up to 1000 resumes at once. Get ranked results in less than a minute.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <h4 class="feature-title">Exact Skill Matching</h4>
+          <p class="feature-desc">Our AI extracts multi-criteria data: skills, years of exp, and location proximity.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h4 class="feature-title">Privacy Focused</h4>
+          <p class="feature-desc">100% browser-based processing. Your data never leaves your device.</p>
+        </div>
+      </div>
+
+      <!-- Login Section -->
+      <section id="login" class="animate-fadeInUp animate-delay-3" style="max-width: 480px; margin: 0 auto;">
+        <div class="card card-ultra-glass" style="text-align: center; padding: 48px 40px; border-radius: 24px;">
+          <div class="navbar-brand-icon" style="margin: 0 auto 24px; width: 44px; height: 44px; font-size: 1.3rem;">📄
+          </div>
+          <h3 style="margin-bottom: 12px; font-size: 1.6rem;">Welcome to ASR Services</h3>
+          <p class="subtitle" style="font-size: 0.95rem; margin-bottom: 32px; max-width: 100%;">Securely enter your
+            professional details to access your screening workspace.</p>
+
+          <div class="form-group" style="margin-bottom: 24px;">
+            <input type="email" id="emailInput" class="form-input" placeholder="Work Email Address" required style="text-align: center; padding: 18px;">
+            <div id="loginError" class="form-error">Valid professional email required.</div>
+          </div>
+
+          <label class="form-check" style="margin-bottom: 32px; justify-content: center;">
+            <input type="checkbox" id="agreeCheckbox">
+            <span class="form-check-label" style="font-size: 0.8rem;">
+              Agree to <a href="#" id="openTerms">Service Terms</a> &amp; <a href="#" id="openPrivacy">Privacy</a>
+            </span>
+          </label>
+
+          <button id="loginBtn" class="btn btn-primary btn-block btn-lg" disabled style="border-radius: 14px; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);">
+            Enter Workspace
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="legal-footer animate-fadeIn">
+      <p>Powered by Advanced ASR Services AI Screener • <a href="#" id="copyLink">asrservices24</a></p>
+      <p style="margin-top: 8px;">© 2026 ASR Services AI Screener. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <!-- Modals -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Terms of Service</h3>
+        <button class="modal-close" id="closeModal">×</button>
+      </div>
+      <div id="modalBody" style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+        <!-- Content injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const emailInput = document.getElementById('emailInput');
+      const agreeCheckbox = document.getElementById('agreeCheckbox');
+      const loginBtn = document.getElementById('loginBtn');
+      const errorEl = document.getElementById('loginError');
+
+      // Modal Elements
+      const overlay = document.getElementById('modalOverlay');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+      const closeModal = document.getElementById('closeModal');
+
+      const validate = () => {
+        const emailOk = Utils.validateEmail(emailInput.value);
+        const agreeOk = agreeCheckbox.checked;
+        loginBtn.disabled = !(emailOk && agreeOk);
+        errorEl.classList.toggle('visible', emailInput.value && !emailOk);
+      };
+
+      emailInput.addEventListener('input', validate);
+      agreeCheckbox.addEventListener('change', validate);
+
+      loginBtn.addEventListener('click', async () => {
+        const res = await Utils.login(emailInput.value);
+        if (!res.error) {
+          alert("Magic link sent! Please check your email inbox.");
+        } else {
+          errorEl.textContent = res.error === 'Rate limit' ? "Too many attempts. Please wait 1 minute." : res.error.message;
+          errorEl.classList.add('visible');
+        }
+      });
+
+      const showModal = (type) => {
+        modalTitle.textContent = type === 'terms' ? 'Terms of Service' : 'Privacy Policy';
+        modalBody.innerHTML = type === 'terms'
+          ? `<p>By using ASR Services AI Screener, you agree that processing is done client-side. We do not store your resumes on our servers. You are responsible for ensuring candidates' privacy.</p>`
+          : `<p>Your privacy is our priority. We processed data locally in your browser. No personal data is uploaded or stored by asrservices24.</p>`;
+        overlay.classList.add('active');
+      };
+
+      document.getElementById('openTerms').addEventListener('click', (e) => { e.preventDefault(); showModal('terms'); });
+      document.getElementById('openPrivacy').addEventListener('click', (e) => { e.preventDefault(); showModal('privacy'); });
+      closeModal.addEventListener('click', () => overlay.classList.remove('active'));
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
+    });
+  </script>
+</body>
+</html>
