@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASR Services AI Screener – Screen Candidates</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <style>
+        .skill-tag {
+            background: var(--accent-primary-light);
+            color: var(--accent-primary);
+            border: 1px solid rgba(37, 99, 235, 0.1);
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .skill-tag button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-light);
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .skill-tag button:hover {
+            color: var(--danger);
+        }
+
+        .criteria-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .criteria-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="navbar-container"></div>
+
+        <div class="page-hero">
+            <div class="text-center animate-fadeInUp" style="margin-bottom: 40px;">
+                <span class="badge">Paid Session Active</span>
+                <h1 style="margin-top: 16px;">Configure Your <span style="color:var(--accent-primary);">Criteria</span>
+                </h1>
+                <p class="subtitle">Upload your job description and resumes. Our AI will rank them based on your exact
+                    requirements.</p>
+            </div>
+
+            <div id="batchUsedWarning" class="alert alert-warning hidden" style="max-width: 700px; margin: 0 auto 32px;">
+                ⚠️ Batch limit reached. Please purchase more credits to screen again.
+            </div>
+
+            <div id="screeningForm" style="max-width: 900px; margin: 0 auto;">
+
+                <!-- Step 1: Role -->
+                <div class="card mb-3 animate-fadeInUp animate-delay-1">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom: 24px;">
+                        <div style="width:36px;height:36px;background:var(--accent-primary);color:white;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:800;">
+                            1</div>
+                        <h3>Role & Description</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Job Title</label>
+                        <input type="text" id="jobTitleInput" class="form-input" placeholder="e.g. Senior Software Engineer">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Full Job Description</label>
+                        <textarea id="jdInput" class="form-textarea" placeholder="Paste the complete responsibilities and requirements..."></textarea>
+                        <div style="text-align:right; font-size:0.75rem; color:var(--text-muted); margin-top:4px;" id="jdCharCount">0 characters (min 50)</div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Scoring -->
+                <div class="card mb-3 animate-fadeInUp animate-delay-2">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom: 24px;">
+                        <div style="width:36px;height:36px;background:var(--accent-primary);color:white;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:800;">
+                            2</div>
+                        <h3>Scoring Criteria</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Required Skills (Press Enter to add)</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="skillInput" class="form-input" placeholder="e.g. Python, React, Cloud" style="flex:1;">
+                            <button class="btn btn-secondary" id="addSkillBtn">+ Add</button>
+                        </div>
+                        <div id="skillTags" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;"></div>
+                    </div>
+
+                    <div class="criteria-row">
+                        <div class="form-group">
+                            <label>Min. Total Exp (Years)</label>
+                            <input type="number" id="requiredYears" class="form-input" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Target Location</label>
+                            <input type="text" id="hiringLocation" class="form-input" placeholder="e.g. Bangalore, Remote">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Selection Threshold: <span id="thresholdVal" style="color:var(--accent-primary);">50%</span></label>
+                        <input type="range" id="thresholdSlider" min="10" max="90" value="50" style="width:100%; accent-color:var(--accent-primary);">
+                        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">Matches scoring below
+                            this will be automatically rejected with a reason.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3: Resumes -->
+                <div class="card mb-3 animate-fadeInUp animate-delay-3">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom: 24px;">
+                        <div style="width:36px;height:36px;background:var(--accent-primary);color:white;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:800;">
+                            3</div>
+                        <h3>Upload Resumes</h3>
+                    </div>
+
+                    <div class="upload-zone" id="uploadZone">
+                        <input type="file" id="resumeFiles" multiple accept=".pdf,.txt,.docx">
+                        <div class="upload-icon">📂</div>
+                        <div class="upload-text"><strong>Drag & Drop</strong> resumes or click to browse</div>
+                        <div class="upload-hint">Support PDF, TXT, DOCX | Max 1,000 files</div>
+                    </div>
+
+                    <div id="fileListContainer" class="hidden mt-3">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <h4 id="fileCount">0 Files Selected</h4>
+                            <button class="btn btn-secondary btn-sm" id="clearFiles">Clear All</button>
+                        </div>
+                        <ul id="fileList" class="file-list"></ul>
+                    </div>
+                </div>
+
+                <button id="startBtn" class="btn btn-primary btn-block btn-lg animate-fadeInUp animate-delay-4" disabled>
+                    🚀 Start Screening (Uses 1 Credit)
+                </button>
+                <div id="errorEl" class="form-error text-center mt-2"></div>
+
+                <!-- Recent History Section -->
+                <div class="mt-5 animate-fadeInUp" style="margin-top: 60px;">
+                    <h3 style="margin-bottom: 24px;">Recent Screenings</h3>
+                    <div id="historyList" class="grid-history" style="display: grid; gap: 16px;">
+                        <p style="color: var(--text-muted);">Loading history...</p>
+                    </div>
+                </div>
+
+
+                <!-- Progress Overlay -->
+                <div id="progressOverlay" class="modal-overlay">
+                    <div class="modal" style="text-align: center;">
+                        <h3 style="margin-bottom: 20px;">Analying Candidates...</h3>
+                        <div class="progress-container mb-2">
+                            <div id="progressBar" class="progress-bar" style="width: 0%;"></div>
+                        </div>
+                        <p id="progressText" class="progress-text">Initializing...</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="legal-footer">
+            <p>Local Processing • Safe & Secure • © 2026 ASR Services AI Screener</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/screener.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!await Utils.requirePayment()) return;
+            await Utils.renderNavbar('navbar-container');
+
+            if (Utils.hasUsedBatch()) {
+                document.getElementById('batchUsedWarning').classList.remove('hidden');
+                document.getElementById('screeningForm').style.opacity = '0.5';
+                document.getElementById('screeningForm').style.pointerEvents = 'none';
+            }
+
+            const elements = {
+                jdInput: document.getElementById('jdInput'),
+                jdCount: document.getElementById('jdCharCount'),
+                skillInput: document.getElementById('skillInput'),
+                addBtn: document.getElementById('addSkillBtn'),
+                tags: document.getElementById('skillTags'),
+                years: document.getElementById('requiredYears'),
+                loc: document.getElementById('hiringLocation'),
+                slider: document.getElementById('thresholdSlider'),
+                sliderVal: document.getElementById('thresholdVal'),
+                fileInput: document.getElementById('resumeFiles'),
+                uploadZone: document.getElementById('uploadZone'),
+                list: document.getElementById('fileList'),
+                listContainer: document.getElementById('fileListContainer'),
+                fileCount: document.getElementById('fileCount'),
+                clear: document.getElementById('clearFiles'),
+                start: document.getElementById('startBtn'),
+                error: document.getElementById('errorEl'),
+                progOverlay: document.getElementById('progressOverlay'),
+                progBar: document.getElementById('progressBar'),
+                progText: document.getElementById('progressText')
+            };
+
+            let skills = [];
+            let files = [];
+
+            const validate = () => {
+                const jdOk = elements.jdInput.value.length >= 50;
+                const skillsOk = skills.length > 0;
+                const filesOk = files.length > 0;
+                elements.start.disabled = !(jdOk && skillsOk && filesOk);
+            };
+
+            // JD Count
+            elements.jdInput.addEventListener('input', () => {
+                elements.jdCount.textContent = `${elements.jdInput.value.length} characters (min 50)`;
+                validate();
+            });
+
+            // Skills
+            const renderTags = () => {
+                elements.tags.innerHTML = skills.map((s, i) => `
+          <div class="skill-tag">${s}<button onclick="window._remSkill(${i})">×</button></div>
+        `).join('');
+            };
+            window._remSkill = (i) => { skills.splice(i, 1); renderTags(); validate(); };
+
+            elements.addBtn.onclick = () => {
+                const val = elements.skillInput.value.trim();
+                if (val && !skills.includes(val)) { skills.push(val); elements.skillInput.value = ''; renderTags(); validate(); }
+            };
+            elements.skillInput.onkeypress = (e) => { if (e.key === 'Enter') elements.addBtn.onclick(); };
+
+            // Files
+            const updateFiles = (newFiles) => {
+                files = [...files, ...Array.from(newFiles)].slice(0, 1000);
+                elements.listContainer.classList.remove('hidden');
+                elements.fileCount.textContent = `${files.length} Files Selected`;
+                elements.list.innerHTML = files.map(f => `<li><span class="file-name">📄 ${f.name}</span> <span class="file-size">${Utils.formatFileSize(f.size)}</span></li>`).join('');
+                validate();
+            };
+            elements.fileInput.onchange = (e) => updateFiles(e.target.files);
+            elements.clear.onclick = () => { files = []; elements.listContainer.classList.add('hidden'); validate(); };
+
+            // Slider
+            elements.slider.oninput = () => elements.sliderVal.textContent = elements.slider.value + '%';
+
+            // Start
+            elements.start.onclick = async () => {
+                elements.progOverlay.classList.add('active');
+                try {
+                    const config = {
+                        jdText: elements.jdInput.value,
+                        requiredSkills: skills,
+                        jobTitle: document.getElementById('jobTitleInput').value || 'Unspecified Role',
+                        requiredYears: parseInt(elements.years.value) || 0,
+                        hiringLocation: elements.loc.value,
+                        passThreshold: parseInt(elements.slider.value)
+                    };
+
+                    const results = await Screener.processResumes(config, files, (done, total, last) => {
+                        const pct = Math.round((done / total) * 100);
+                        elements.progBar.style.width = pct + '%';
+                        elements.progText.textContent = `Processing ${done}/${total}: ${last}`;
+                    });
+
+                    // Save to Database
+                    await Utils.saveScreening(config, results);
+
+                    Utils.markBatchUsed();
+                    sessionStorage.setItem('rs_results', JSON.stringify(results));
+                    window.location.href = 'results.html';
+
+                } catch (e) {
+                    elements.progOverlay.classList.remove('active');
+                    elements.error.textContent = e.message;
+                    elements.error.classList.add('visible');
+                }
+            };
+            // Load History
+            const renderHistory = async () => {
+                const history = await Utils.getScreenings();
+                const container = document.getElementById('historyList');
+                if (!container) return;
+                if (history.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-muted);">No previous screenings found.</p>';
+                    return;
+                }
+                container.innerHTML = history.map(s => `
+                    <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px;">
+                        <div>
+                            <div style="font-weight: 700; color: var(--text-primary);">${s.job_title}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">${new Date(s.created_at).toLocaleDateString()} • ${s.total_analyzed} Resumes</div>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <div style="text-align: right;">
+                                <div style="color: var(--success); font-weight: 700;">${s.selected_count} Selected</div>
+                                <div style="color: var(--danger); font-size: 0.8rem;">${s.rejected_count} Rejected</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            };
+            renderHistory();
+        });
+    </script>
+</body>
+</html>
