@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASR Services AI Screener – Pricing</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
+
 <body>
     <div class="container">
         <div id="navbar-container"></div>
@@ -15,7 +18,8 @@
         <div class="page-hero">
             <div class="text-center animate-fadeInUp" style="margin-bottom: 50px;">
                 <span class="badge">CHOOSE YOUR PLAN</span>
-                <h1 style="margin-top: 16px;">Simple Predictable <span style="color:var(--accent-primary);">Pricing</span></h1>
+                <h1 style="margin-top: 16px;">Simple Predictable <span
+                        style="color:var(--accent-primary);">Pricing</span></h1>
                 <p class="subtitle">Pick the plan that fits your hiring needs. Pay once via UPI and start screening
                     instantly.</p>
             </div>
@@ -108,7 +112,8 @@
             </div>
 
             <div style="text-align: center; margin-bottom: 24px;">
-                <div id="qrcode" style="display:inline-block; padding: 16px; background: white; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <div id="qrcode"
+                    style="display:inline-block; padding: 16px; background: white; border-radius: var(--radius-md); border: 1px solid var(--border);">
                 </div>
                 <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 12px;">Scan the QR code with any UPI
                     app (GPay, PhonePe, Paytm)</p>
@@ -144,15 +149,32 @@
                 confirmBtn.disabled = txnInput.value.length < 10;
             });
 
-            confirmBtn.addEventListener('click', () => {
+            confirmBtn.addEventListener('click', async () => {
                 const amount = window._currentAmount;
                 const credits = window._currentCredits;
-                if (Utils.activatePayment(amount, credits)) {
+                const success = await Utils.activatePayment(amount, credits);
+                if (success) {
                     window.location.href = 'dashboard.html';
                 } else {
-                    alert('Rate limited. Please wait and try again.');
+                    alert('Could not activate payment. Please check your transaction ID and try again.');
                 }
             });
+
+            const refundLink = document.getElementById('openRefunder');
+            if (refundLink) {
+                refundLink.onclick = (e) => {
+                    e.preventDefault();
+                    Utils.showModal('Refund Policy', `
+                        <p>Our goal is your complete satisfaction. Please review our refund terms:</p>
+                        <ul>
+                            <li><strong>Session Points:</strong> Refunds are only applicable if credits were not used.</li>
+                            <li><strong>Technical Issues:</strong> If a screening fails due to a system error, we will credit your account or refund the amount.</li>
+                            <li><strong>Timeline:</strong> Refund requests must be made within 24 hours of payment.</li>
+                            <li><strong>Process:</strong> Contact support at support@asrservices24.ai with your Transaction ID.</li>
+                        </ul>
+                    `);
+                };
+            }
         });
 
         const UPI_ID = 'krishnabajpai62@okaxis';
@@ -179,4 +201,5 @@
         }
     </script>
 </body>
+
 </html>

@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASR Services AI Screener – Screen Candidates</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <style>
         .skill-tag {
             background: var(--accent-primary-light);
@@ -47,6 +50,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div id="navbar-container"></div>
@@ -60,7 +64,8 @@
                     requirements.</p>
             </div>
 
-            <div id="batchUsedWarning" class="alert alert-warning hidden" style="max-width: 700px; margin: 0 auto 32px;">
+            <div id="batchUsedWarning" class="alert alert-warning hidden"
+                style="max-width: 700px; margin: 0 auto 32px;">
                 ⚠️ Batch limit reached. Please purchase more credits to screen again.
             </div>
 
@@ -69,27 +74,32 @@
                 <!-- Step 1: Role -->
                 <div class="card mb-3 animate-fadeInUp animate-delay-1">
                     <div style="display:flex; align-items:center; gap:12px; margin-bottom: 24px;">
-                        <div style="width:36px;height:36px;background:var(--accent-primary);color:white;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:800;">
+                        <div
+                            style="width:36px;height:36px;background:var(--accent-primary);color:white;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:800;">
                             1</div>
                         <h3>Role & Description</h3>
                     </div>
 
                     <div class="form-group">
                         <label>Job Title</label>
-                        <input type="text" id="jobTitleInput" class="form-input" placeholder="e.g. Senior Software Engineer">
+                        <input type="text" id="jobTitleInput" class="form-input"
+                            placeholder="e.g. Senior Software Engineer">
                     </div>
 
                     <div class="form-group">
                         <label>Full Job Description</label>
-                        <textarea id="jdInput" class="form-textarea" placeholder="Paste the complete responsibilities and requirements..."></textarea>
-                        <div style="text-align:right; font-size:0.75rem; color:var(--text-muted); margin-top:4px;" id="jdCharCount">0 characters (min 50)</div>
+                        <textarea id="jdInput" class="form-textarea"
+                            placeholder="Paste the complete responsibilities and requirements..."></textarea>
+                        <div style="text-align:right; font-size:0.75rem; color:var(--text-muted); margin-top:4px;"
+                            id="jdCharCount">0 characters (min 50)</div>
                     </div>
                 </div>
 
                 <!-- Step 2: Scoring -->
                 <div class="card mb-3 animate-fadeInUp animate-delay-2">
                     <div style="display:flex; align-items:center; gap:12px; margin-bottom: 24px;">
-                        <div style="width:36px;height:36px;background:var(--accent-primary);color:white;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:800;">
+                        <div
+                            style="width:36px;height:36px;background:var(--accent-primary);color:white;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:800;">
                             2</div>
                         <h3>Scoring Criteria</h3>
                     </div>
@@ -97,7 +107,8 @@
                     <div class="form-group">
                         <label>Required Skills (Press Enter to add)</label>
                         <div style="display:flex; gap:8px;">
-                            <input type="text" id="skillInput" class="form-input" placeholder="e.g. Python, React, Cloud" style="flex:1;">
+                            <input type="text" id="skillInput" class="form-input"
+                                placeholder="e.g. Python, React, Cloud" style="flex:1;">
                             <button class="btn btn-secondary" id="addSkillBtn">+ Add</button>
                         </div>
                         <div id="skillTags" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;"></div>
@@ -110,13 +121,16 @@
                         </div>
                         <div class="form-group">
                             <label>Target Location</label>
-                            <input type="text" id="hiringLocation" class="form-input" placeholder="e.g. Bangalore, Remote">
+                            <input type="text" id="hiringLocation" class="form-input"
+                                placeholder="e.g. Bangalore, Remote">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Selection Threshold: <span id="thresholdVal" style="color:var(--accent-primary);">50%</span></label>
-                        <input type="range" id="thresholdSlider" min="10" max="90" value="50" style="width:100%; accent-color:var(--accent-primary);">
+                        <label>Selection Threshold: <span id="thresholdVal"
+                                style="color:var(--accent-primary);">50%</span></label>
+                        <input type="range" id="thresholdSlider" min="10" max="90" value="50"
+                            style="width:100%; accent-color:var(--accent-primary);">
                         <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">Matches scoring below
                             this will be automatically rejected with a reason.</p>
                     </div>
@@ -125,7 +139,8 @@
                 <!-- Step 3: Resumes -->
                 <div class="card mb-3 animate-fadeInUp animate-delay-3">
                     <div style="display:flex; align-items:center; gap:12px; margin-bottom: 24px;">
-                        <div style="width:36px;height:36px;background:var(--accent-primary);color:white;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:800;">
+                        <div
+                            style="width:36px;height:36px;background:var(--accent-primary);color:white;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:800;">
                             3</div>
                         <h3>Upload Resumes</h3>
                     </div>
@@ -138,7 +153,8 @@
                     </div>
 
                     <div id="fileListContainer" class="hidden mt-3">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                             <h4 id="fileCount">0 Files Selected</h4>
                             <button class="btn btn-secondary btn-sm" id="clearFiles">Clear All</button>
                         </div>
@@ -146,7 +162,8 @@
                     </div>
                 </div>
 
-                <button id="startBtn" class="btn btn-primary btn-block btn-lg animate-fadeInUp animate-delay-4" disabled>
+                <button id="startBtn" class="btn btn-primary btn-block btn-lg animate-fadeInUp animate-delay-4"
+                    disabled>
                     🚀 Start Screening (Uses 1 Credit)
                 </button>
                 <div id="errorEl" class="form-error text-center mt-2"></div>
@@ -187,7 +204,7 @@
             if (!await Utils.requirePayment()) return;
             await Utils.renderNavbar('navbar-container');
 
-            if (Utils.hasUsedBatch()) {
+            if (await Utils.hasUsedBatch()) {
                 document.getElementById('batchUsedWarning').classList.remove('hidden');
                 document.getElementById('screeningForm').style.opacity = '0.5';
                 document.getElementById('screeningForm').style.pointerEvents = 'none';
@@ -282,7 +299,7 @@
                     // Save to Database
                     await Utils.saveScreening(config, results);
 
-                    Utils.markBatchUsed();
+                    await Utils.markBatchUsed();
                     sessionStorage.setItem('rs_results', JSON.stringify(results));
                     window.location.href = 'results.html';
 
@@ -320,4 +337,5 @@
         });
     </script>
 </body>
+
 </html>

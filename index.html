@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ASR Services AI Screener — Hiring 10x Faster</title>
-  <meta name="description" content="AI-powered resume screening that ranks candidates against your job description in seconds.">
+  <meta name="description"
+    content="AI-powered resume screening that ranks candidates against your job description in seconds.">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
 </head>
 
 <body>
@@ -22,6 +25,56 @@
         <a href="#login" class="btn btn-primary btn-sm" style="padding: 8px 20px;">Get Started</a>
       </div>
     </nav>
+
+    <style>
+      .btn-google {
+        background: white;
+        color: #3c4043;
+        border: 1px solid #dadce0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-weight: 500;
+        margin-top: 20px;
+        transition: all 0.2s;
+      }
+
+      .btn-google:hover {
+        background: #f8f9fa;
+        border-color: #d2d4d7;
+        box-shadow: 0 1px 3px rgba(60, 64, 67, 0.1);
+      }
+
+      .btn-google img {
+        width: 18px;
+        height: 18px;
+      }
+
+      .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 24px 0;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .divider:not(:empty)::before {
+        margin-right: 12px;
+      }
+
+      .divider:not(:empty)::after {
+        margin-left: 12px;
+      }
+    </style>
 
     <main class="page-hero">
       <div class="text-center animate-fadeInUp animate-delay-1" style="margin-bottom: 60px;">
@@ -64,21 +117,51 @@
           <p class="subtitle" style="font-size: 0.95rem; margin-bottom: 32px; max-width: 100%;">Securely enter your
             professional details to access your screening workspace.</p>
 
-          <div class="form-group" style="margin-bottom: 24px;">
-            <input type="email" id="emailInput" class="form-input" placeholder="Work Email Address" required style="text-align: center; padding: 18px;">
-            <div id="loginError" class="form-error">Valid professional email required.</div>
+          <!-- Login / Sign Up Toggle -->
+          <div
+            style="display: flex; gap: 8px; margin-bottom: 28px; padding: 4px; background: var(--bg-input); border-radius: var(--radius-md); max-width: 260px; margin-left: auto; margin-right: auto;">
+            <button type="button" class="tab-toggle active" id="tabLogin" onclick="switchAuthTab('login')"
+              style="flex:1; padding: 10px; border: none; background: white; font-weight: 700; color: var(--accent-primary); border-radius: var(--radius-sm); cursor: pointer; box-shadow: var(--shadow-sm); transition: var(--transition-fast);">Log
+              In</button>
+            <button type="button" class="tab-toggle" id="tabSignup" onclick="switchAuthTab('signup')"
+              style="flex:1; padding: 10px; border: none; background: none; font-weight: 700; color: var(--text-muted); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition-fast);">Sign
+              Up</button>
           </div>
 
-          <label class="form-check" style="margin-bottom: 32px; justify-content: center;">
-            <input type="checkbox" id="agreeCheckbox">
-            <span class="form-check-label" style="font-size: 0.8rem;">
-              Agree to <a href="#" id="openTerms">Service Terms</a> &amp; <a href="#" id="openPrivacy">Privacy</a>
-            </span>
-          </label>
+          <form id="loginForm">
+            <div class="form-group" style="margin-bottom: 20px;">
+              <input type="email" id="emailInput" class="form-input" placeholder="Work Email Address" required
+                style="text-align: center; padding: 18px;">
+            </div>
 
-          <button id="loginBtn" class="btn btn-primary btn-block btn-lg" disabled style="border-radius: 14px; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);">
-            Enter Workspace
-          </button>
+            <div class="form-group" style="margin-bottom: 24px;">
+              <input type="password" id="passwordInput" class="form-input" placeholder="Password (min 6 characters)"
+                required minlength="6" style="text-align: center; padding: 18px;">
+            </div>
+
+            <div id="loginError" class="form-error" style="margin-bottom: 16px;">Valid professional email required.
+            </div>
+
+            <label class="form-check" style="margin-bottom: 32px; justify-content: center;">
+              <input type="checkbox" id="agreeTerms">
+              <span class="form-check-label" style="font-size: 0.8rem;">
+                Agree to <a href="#" id="openTerms">Service Terms</a> &amp; <a href="#" id="openPrivacy">Privacy</a>
+              </span>
+            </label>
+
+            <button type="submit" id="loginBtn" class="btn btn-primary btn-block btn-lg" disabled
+              style="border-radius: 14px; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);">
+              Log In
+            </button>
+
+            <div class="divider">OR</div>
+
+            <button type="button" id="googleLoginBtn" class="btn btn-google btn-block btn-lg"
+              style="border-radius: 14px;">
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+              Continue with Google
+            </button>
+          </form>
         </div>
       </section>
     </main>
@@ -106,43 +189,44 @@
   <script src="js/utils.js"></script>
   <script src="js/auth.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const emailInput = document.getElementById('emailInput');
-      const agreeCheckbox = document.getElementById('agreeCheckbox');
-      const loginBtn = document.getElementById('loginBtn');
-      const errorEl = document.getElementById('loginError');
+    function switchAuthTab(tab) {
+      const loginTab = document.getElementById('tabLogin');
+      const signupTab = document.getElementById('tabSignup');
+      const btn = document.getElementById('loginBtn');
+      if (tab === 'login') {
+        loginTab.style.background = 'white';
+        loginTab.style.color = 'var(--accent-primary)';
+        loginTab.style.boxShadow = 'var(--shadow-sm)';
+        signupTab.style.background = 'none';
+        signupTab.style.color = 'var(--text-muted)';
+        signupTab.style.boxShadow = 'none';
+        btn.textContent = 'Log In';
+        window._authMode = 'login';
+      } else {
+        signupTab.style.background = 'white';
+        signupTab.style.color = 'var(--accent-primary)';
+        signupTab.style.boxShadow = 'var(--shadow-sm)';
+        loginTab.style.background = 'none';
+        loginTab.style.color = 'var(--text-muted)';
+        loginTab.style.boxShadow = 'none';
+        btn.textContent = 'Sign Up';
+        window._authMode = 'signup';
+      }
+    }
+    window._authMode = 'login';
 
-      // Modal Elements
+    // Modal handlers
+    document.addEventListener('DOMContentLoaded', () => {
       const overlay = document.getElementById('modalOverlay');
       const modalTitle = document.getElementById('modalTitle');
       const modalBody = document.getElementById('modalBody');
       const closeModal = document.getElementById('closeModal');
 
-      const validate = () => {
-        const emailOk = Utils.validateEmail(emailInput.value);
-        const agreeOk = agreeCheckbox.checked;
-        loginBtn.disabled = !(emailOk && agreeOk);
-        errorEl.classList.toggle('visible', emailInput.value && !emailOk);
-      };
-
-      emailInput.addEventListener('input', validate);
-      agreeCheckbox.addEventListener('change', validate);
-
-      loginBtn.addEventListener('click', async () => {
-        const res = await Utils.login(emailInput.value);
-        if (!res.error) {
-          alert("Magic link sent! Please check your email inbox.");
-        } else {
-          errorEl.textContent = res.error === 'Rate limit' ? "Too many attempts. Please wait 1 minute." : res.error.message;
-          errorEl.classList.add('visible');
-        }
-      });
-
       const showModal = (type) => {
         modalTitle.textContent = type === 'terms' ? 'Terms of Service' : 'Privacy Policy';
         modalBody.innerHTML = type === 'terms'
           ? `<p>By using ASR Services AI Screener, you agree that processing is done client-side. We do not store your resumes on our servers. You are responsible for ensuring candidates' privacy.</p>`
-          : `<p>Your privacy is our priority. We processed data locally in your browser. No personal data is uploaded or stored by asrservices24.</p>`;
+          : `<p>Your privacy is our priority. We process data locally in your browser. No personal data is uploaded or stored by asrservices24.</p>`;
         overlay.classList.add('active');
       };
 
@@ -153,4 +237,5 @@
     });
   </script>
 </body>
+
 </html>
