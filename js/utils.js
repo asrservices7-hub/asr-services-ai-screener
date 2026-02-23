@@ -7,6 +7,11 @@ const SUPABASE_URL = 'https://voqpifhgvizudlggsuzj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcXBpZmhndml6dWRsZ2dzdXpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODIzNzYsImV4cCI6MjA4NzM1ODM3Nn0.B88w3JCAv75qIky638UwPh6TVyKfYbAxHyCB2zdSe2o';
 let supabaseClient = null;
 
+// Backend API URL (Render)
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3001'
+  : 'https://asr-services-backend.onrender.com';
+
 // Initialize Supabase client if SDK is present
 if (window.supabase && window.supabase.createClient) {
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -166,6 +171,36 @@ const Utils = {
       .eq('email', session.email);
 
     return !error;
+  },
+
+  /* ---------- Backend API Methods ---------- */
+  async createOrder(email, planName, amount, credits) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, plan_name: planName, amount, credits })
+      });
+      const data = await res.json();
+      return data.success ? data.order : null;
+    } catch (err) {
+      console.error('Create order error:', err);
+      return null;
+    }
+  },
+
+  async verifyPayment(orderId, utr, email) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/orders/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: orderId, utr, email })
+      });
+      return await res.json();
+    } catch (err) {
+      console.error('Verify payment error:', err);
+      throw err;
+    }
   },
 
 

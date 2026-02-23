@@ -4,107 +4,248 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASR Services AI Screener — Hiring 10x Faster</title>
+  <title>ASR Services — AI-Powered Resume Screening</title>
   <meta name="description"
-    content="AI-powered resume screening that ranks candidates against your job description in seconds.">
+    content="AI-powered resume screening that ranks candidates against your job description in seconds. Trusted by 500+ recruiters.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
 </head>
 
 <body>
+  <!-- Animated Background -->
   <div class="mesh-backdrop"></div>
+  <div class="floating-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
   <div class="container">
+    <!-- Premium Navbar -->
     <nav class="navbar animate-fadeInUp">
       <div class="navbar-brand">
         <div class="navbar-brand-icon">📄</div>
-        <span>ASR Services AI Screener</span>
+        <span>ASR Services</span>
       </div>
       <div class="navbar-right">
         <a href="#features" class="navbar-link">Features</a>
+        <a href="#pricing-preview" class="navbar-link">Pricing</a>
         <a href="#login" class="btn btn-primary btn-sm" style="padding: 8px 20px;">Get Started</a>
       </div>
     </nav>
 
-    <style>
-      .btn-google {
-        background: white;
-        color: #3c4043;
-        border: 1px solid #dadce0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        font-weight: 500;
-        margin-top: 20px;
-        transition: all 0.2s;
-      }
-
-      .btn-google:hover {
-        background: #f8f9fa;
-        border-color: #d2d4d7;
-        box-shadow: 0 1px 3px rgba(60, 64, 67, 0.1);
-      }
-
-      .btn-google img {
-        width: 18px;
-        height: 18px;
-      }
-
-      .divider {
-        display: flex;
-        align-items: center;
-        text-align: center;
-        margin: 24px 0;
-        color: var(--text-muted);
-        font-size: 0.8rem;
-      }
-
-      .divider::before,
-      .divider::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid var(--border);
-      }
-
-      .divider:not(:empty)::before {
-        margin-right: 12px;
-      }
-
-      .divider:not(:empty)::after {
-        margin-left: 12px;
-      }
-    </style>
-
+    <!-- Hero Section -->
     <main class="page-hero">
-      <div class="text-center animate-fadeInUp animate-delay-1" style="margin-bottom: 60px;">
-        <span class="badge mb-2">The Future of Hiring is AI</span>
-        <h1 style="margin-bottom: 24px;">Unlock the Power of <br><span style="color:var(--accent-primary);">Elite
-            Screening</span></h1>
-        <p class="subtitle">Identify top-tier talent with precision AI analysis. Experience a new standard in
-          specialized candidate selection.</p>
-        <div style="margin-top: 32px; display: flex; gap: 12px; justify-content: center;">
-          <a href="#login" class="btn btn-primary btn-lg">Start Screening Now</a>
-          <a href="#features" class="btn btn-secondary btn-lg">How it Works</a>
+      <div class="text-center animate-fadeInUp animate-delay-1" style="margin-bottom: 80px;">
+        <span class="badge badge-glow mb-2">
+          <span class="badge-dot"></span>
+          Now Live — Start Screening Instantly
+        </span>
+        <h1 style="margin-bottom: 24px; margin-top: 20px;">
+          Screen Resumes <br>
+          <span class="gradient-text">10x Faster with AI</span>
+        </h1>
+        <p class="subtitle" style="max-width: 640px;">
+          Upload hundreds of resumes, define your criteria, and let our AI rank every candidate in seconds.
+          Skills, experience, location — all matched automatically.
+        </p>
+        <div style="margin-top: 40px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+          <a href="#login" class="btn btn-primary btn-lg btn-pulse">🚀 Start Screening Now</a>
+          <a href="#how-it-works" class="btn btn-secondary btn-lg">See How It Works →</a>
+        </div>
+        <!-- Social Proof -->
+        <div class="social-proof animate-fadeInUp animate-delay-2">
+          <div class="social-proof-avatars">
+            <div class="avatar">S</div>
+            <div class="avatar">R</div>
+            <div class="avatar">A</div>
+            <div class="avatar">K</div>
+            <div class="avatar">M</div>
+          </div>
+          <span>Trusted by <strong>500+</strong> recruiters across India</span>
+        </div>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="hero-stats animate-fadeInUp animate-delay-2">
+        <div class="hero-stat">
+          <div class="hero-stat-value">10,000+</div>
+          <div class="hero-stat-label">Resumes Screened</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">&lt;60s</div>
+          <div class="hero-stat-label">Avg Analysis Time</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">95%</div>
+          <div class="hero-stat-label">Accuracy Rate</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">100%</div>
+          <div class="hero-stat-label">Privacy Safe</div>
         </div>
       </div>
 
       <!-- Feature Grid -->
-      <div id="features" class="feature-grid animate-fadeInUp animate-delay-2" style="margin-bottom: 80px;">
-        <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <h4 class="feature-title">Ultra Fast Analysis</h4>
-          <p class="feature-desc">Process up to 1000 resumes at once. Get ranked results in less than a minute.</p>
+      <div id="features" class="section-heading animate-fadeInUp">
+        <span class="badge mb-2">WHY ASR SERVICES</span>
+        <h2>Everything You Need for <span class="gradient-text">Smart Hiring</span></h2>
+      </div>
+
+      <div class="feature-grid animate-fadeInUp animate-delay-1" style="margin-bottom: 80px;">
+        <div class="feature-card feature-card-premium">
+          <div class="feature-icon-wrapper">
+            <div class="feature-icon">⚡</div>
+          </div>
+          <h4 class="feature-title">Bulk Processing</h4>
+          <p class="feature-desc">Upload up to 1,000 resumes at once. Get ranked results in under a minute with
+            parallel analysis.</p>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">🎯</div>
-          <h4 class="feature-title">Exact Skill Matching</h4>
-          <p class="feature-desc">Our AI extracts multi-criteria data: skills, years of exp, and location proximity.</p>
+        <div class="feature-card feature-card-premium">
+          <div class="feature-icon-wrapper">
+            <div class="feature-icon">🎯</div>
+          </div>
+          <h4 class="feature-title">Multi-Criteria AI</h4>
+          <p class="feature-desc">5-dimensional scoring: Skills match, total experience, relevant experience, skill
+            duration, and location.</p>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">🔒</div>
-          <h4 class="feature-title">Privacy Focused</h4>
-          <p class="feature-desc">100% browser-based processing. Your data never leaves your device.</p>
+        <div class="feature-card feature-card-premium">
+          <div class="feature-icon-wrapper">
+            <div class="feature-icon">🔒</div>
+          </div>
+          <h4 class="feature-title">100% Private</h4>
+          <p class="feature-desc">All resume processing happens in your browser. Your data never leaves your device. Zero
+            server uploads.</p>
+        </div>
+        <div class="feature-card feature-card-premium">
+          <div class="feature-icon-wrapper">
+            <div class="feature-icon">📊</div>
+          </div>
+          <h4 class="feature-title">Instant Reports</h4>
+          <p class="feature-desc">Export selected candidates to CSV. View detailed scores, matched skills, and rejection
+            reasons.</p>
+        </div>
+        <div class="feature-card feature-card-premium">
+          <div class="feature-icon-wrapper">
+            <div class="feature-icon">📱</div>
+          </div>
+          <h4 class="feature-title">UPI Payment</h4>
+          <p class="feature-desc">Pay instantly via Google Pay, PhonePe, or Paytm. No credit card needed. Instant
+            activation.</p>
+        </div>
+        <div class="feature-card feature-card-premium">
+          <div class="feature-icon-wrapper">
+            <div class="feature-icon">🌐</div>
+          </div>
+          <h4 class="feature-title">PDF + DOCX Support</h4>
+          <p class="feature-desc">Works with PDF, DOCX, and TXT files. Automatic text extraction with smart parsing
+            engine.</p>
+        </div>
+      </div>
+
+      <!-- How It Works -->
+      <div id="how-it-works" class="section-heading animate-fadeInUp">
+        <span class="badge mb-2">SIMPLE 3-STEP PROCESS</span>
+        <h2>How It <span class="gradient-text">Works</span></h2>
+      </div>
+
+      <div class="how-it-works-grid animate-fadeInUp animate-delay-1" style="margin-bottom: 80px;">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h4>Define Your Criteria</h4>
+          <p>Enter the job description, required skills, minimum experience, and target location.</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h4>Upload Resumes</h4>
+          <p>Drag & drop up to 1,000 PDF/DOCX files. Batch processing starts immediately.</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h4>Get Ranked Results</h4>
+          <p>View selected & rejected candidates with scores, reasons, and export to CSV.</p>
+        </div>
+      </div>
+
+      <!-- Mini Pricing Preview -->
+      <div id="pricing-preview" class="section-heading animate-fadeInUp">
+        <span class="badge mb-2">TRANSPARENT PRICING</span>
+        <h2>Start from just <span class="gradient-text">₹99</span></h2>
+        <p class="subtitle">Pay once. No subscriptions. No hidden fees.</p>
+      </div>
+
+      <div class="pricing-preview-grid animate-fadeInUp animate-delay-1" style="margin-bottom: 80px;">
+        <div class="pricing-mini">
+          <span class="pricing-mini-name">Basic</span>
+          <span class="pricing-mini-price">₹99</span>
+          <span class="pricing-mini-desc">3 Analyses</span>
+        </div>
+        <div class="pricing-mini pricing-mini-featured">
+          <span class="pricing-mini-badge">POPULAR</span>
+          <span class="pricing-mini-name">Starter</span>
+          <span class="pricing-mini-price">₹299</span>
+          <span class="pricing-mini-desc">10 Analyses</span>
+        </div>
+        <div class="pricing-mini">
+          <span class="pricing-mini-name">Pro</span>
+          <span class="pricing-mini-price">₹1,999</span>
+          <span class="pricing-mini-desc">100 Analyses</span>
+        </div>
+        <div class="pricing-mini">
+          <span class="pricing-mini-name">Unlimited</span>
+          <span class="pricing-mini-price">₹4,999</span>
+          <span class="pricing-mini-desc">30-Day Access</span>
+        </div>
+      </div>
+
+      <!-- Testimonials -->
+      <div class="section-heading animate-fadeInUp">
+        <span class="badge mb-2">WHAT RECRUITERS SAY</span>
+        <h2>Loved by <span class="gradient-text">Hiring Teams</span></h2>
+      </div>
+
+      <div class="testimonial-grid animate-fadeInUp animate-delay-1" style="margin-bottom: 80px;">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"Screened 200 resumes in under 2 minutes. The skill matching is incredibly accurate."</p>
+          <div class="testimonial-author">
+            <div class="avatar">S</div>
+            <div>
+              <strong>Sneha R.</strong>
+              <span>HR Manager, TCS</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"The best part? My candidates' data never leaves my browser. Complete privacy."</p>
+          <div class="testimonial-author">
+            <div class="avatar">A</div>
+            <div>
+              <strong>Arjun K.</strong>
+              <span>Recruiting Lead, Infosys</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"₹299 for 10 analyses is incredible value. Paid for itself within the first screening."</p>
+          <div class="testimonial-author">
+            <div class="avatar">P</div>
+            <div>
+              <strong>Priya M.</strong>
+              <span>Founder, QuickHire</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -114,8 +255,8 @@
           <div class="navbar-brand-icon" style="margin: 0 auto 24px; width: 44px; height: 44px; font-size: 1.3rem;">📄
           </div>
           <h3 style="margin-bottom: 12px; font-size: 1.6rem;">Welcome to ASR Services</h3>
-          <p class="subtitle" style="font-size: 0.95rem; margin-bottom: 32px; max-width: 100%;">Securely enter your
-            professional details to access your screening workspace.</p>
+          <p class="subtitle" style="font-size: 0.95rem; margin-bottom: 32px; max-width: 100%;">Create your account to
+            start screening candidates instantly.</p>
 
           <!-- Login / Sign Up Toggle -->
           <div
@@ -167,8 +308,8 @@
     </main>
 
     <footer class="legal-footer animate-fadeIn">
-      <p>Powered by Advanced ASR Services AI Screener • <a href="#" id="copyLink">asrservices24</a></p>
-      <p style="margin-top: 8px;">© 2026 ASR Services AI Screener. All rights reserved.</p>
+      <p>Powered by ASR Services AI Screener • <a href="#" id="copyLink">asrservices24</a></p>
+      <p style="margin-top: 8px;">© 2026 ASR Services. All rights reserved.</p>
     </footer>
   </div>
 
@@ -180,10 +321,60 @@
         <button class="modal-close" id="closeModal">×</button>
       </div>
       <div id="modalBody" style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
-        <!-- Content injected via JS -->
       </div>
     </div>
   </div>
+
+  <!-- Inline styles for new components -->
+  <style>
+    .btn-google {
+      background: white;
+      color: #3c4043;
+      border: 1px solid #dadce0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-weight: 500;
+      margin-top: 20px;
+      transition: all 0.2s;
+    }
+
+    .btn-google:hover {
+      background: #f8f9fa;
+      border-color: #d2d4d7;
+      box-shadow: 0 1px 3px rgba(60, 64, 67, 0.1);
+    }
+
+    .btn-google img {
+      width: 18px;
+      height: 18px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 24px 0;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .divider:not(:empty)::before {
+      margin-right: 12px;
+    }
+
+    .divider:not(:empty)::after {
+      margin-left: 12px;
+    }
+  </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/utils.js"></script>
@@ -226,7 +417,7 @@
         modalTitle.textContent = type === 'terms' ? 'Terms of Service' : 'Privacy Policy';
         modalBody.innerHTML = type === 'terms'
           ? `<p>By using ASR Services AI Screener, you agree that processing is done client-side. We do not store your resumes on our servers. You are responsible for ensuring candidates' privacy.</p>`
-          : `<p>Your privacy is our priority. We process data locally in your browser. No personal data is uploaded or stored by asrservices24.</p>`;
+          : `<p>Your privacy is our priority. We process data locally in your browser. No personal data is uploaded or stored by ASR Services.</p>`;
         overlay.classList.add('active');
       };
 

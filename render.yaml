@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: asr-services-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://asrservices24.netlify.app

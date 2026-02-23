@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASR Services AI Screener – Pricing</title>
+    <title>ASR Services — Choose Your Plan</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
@@ -12,14 +12,17 @@
 </head>
 
 <body>
+    <div class="mesh-backdrop"></div>
     <div class="container">
         <div id="navbar-container"></div>
 
         <div class="page-hero">
             <div class="text-center animate-fadeInUp" style="margin-bottom: 50px;">
-                <span class="badge">CHOOSE YOUR PLAN</span>
-                <h1 style="margin-top: 16px;">Simple Predictable <span
-                        style="color:var(--accent-primary);">Pricing</span></h1>
+                <span class="badge badge-glow">
+                    <span class="badge-dot"></span>
+                    CHOOSE YOUR PLAN
+                </span>
+                <h1 style="margin-top: 16px;">Simple Predictable <span class="gradient-text">Pricing</span></h1>
                 <p class="subtitle">Pick the plan that fits your hiring needs. Pay once via UPI and start screening
                     instantly.</p>
             </div>
@@ -90,14 +93,21 @@
                 </div>
             </div>
 
+            <!-- Trust Signals -->
             <div class="text-center mt-3 animate-fadeInUp animate-delay-2">
-                <p style="font-size: 0.85rem; color: var(--text-muted);">
-                    🛡️ Secured by UPI • Instant Activation • <a href="#" id="openRefunder">Refund Policy</a>
-                </p>
+                <div
+                    style="display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; font-size: 0.85rem; color: var(--text-muted);">
+                    <span>🛡️ Secured by UPI</span>
+                    <span>⚡ Instant Activation</span>
+                    <span>🔄 <a href="#" id="openRefunder">Refund Policy</a></span>
+                </div>
             </div>
         </div>
 
-        <p>All payments are processed directly through your UPI app.<br>© 2026 ASR Services AI Screener</p>
+        <footer class="legal-footer">
+            <p>All payments are processed directly through your UPI app.<br>© 2026 ASR Services. All rights reserved.
+            </p>
+        </footer>
     </div>
 
     <!-- Payment Modal -->
@@ -129,8 +139,10 @@
                     <input type="text" id="txnIdInput" class="form-input" placeholder="e.g. 123456789012">
                 </div>
                 <button id="confirmPayBtn" class="btn btn-success btn-block" disabled>
-                    I Have Paid — Activate My Session
+                    ✅ I Have Paid — Activate My Session
                 </button>
+                <p id="paymentStatus"
+                    style="font-size: 0.82rem; color: var(--text-muted); text-align: center; margin-top: 12px;"></p>
             </div>
         </div>
     </div>
@@ -144,19 +156,58 @@
 
             const txnInput = document.getElementById('txnIdInput');
             const confirmBtn = document.getElementById('confirmPayBtn');
+            const statusEl = document.getElementById('paymentStatus');
 
             txnInput.addEventListener('input', () => {
                 confirmBtn.disabled = txnInput.value.length < 10;
             });
 
             confirmBtn.addEventListener('click', async () => {
-                const amount = window._currentAmount;
-                const credits = window._currentCredits;
-                const success = await Utils.activatePayment(amount, credits);
-                if (success) {
-                    window.location.href = 'dashboard.html';
-                } else {
-                    alert('Could not activate payment. Please check your transaction ID and try again.');
+                const orderId = window._currentOrderId;
+                const utr = txnInput.value.trim();
+                const session = await Utils.getSession();
+
+                if (!session || !session.email) {
+                    statusEl.textContent = '❌ Please log in again.';
+                    statusEl.style.color = 'var(--danger)';
+                    return;
+                }
+
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<span class="spinner" style="width:20px;height:20px;border-width:2px;"></span> Verifying...';
+                statusEl.textContent = '';
+
+                try {
+                    const result = await Utils.verifyPayment(orderId, utr, session.email);
+                    if (result.success) {
+                        statusEl.textContent = '✅ ' + (result.message || 'Payment verified!');
+                        statusEl.style.color = 'var(--success)';
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1500);
+                    } else {
+                        statusEl.textContent = '❌ ' + (result.error || 'Verification failed.');
+                        statusEl.style.color = 'var(--danger)';
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = '✅ I Have Paid — Activate My Session';
+                    }
+                } catch (err) {
+                    // Fallback: direct activation if backend is unavailable
+                    const amount = window._currentAmount;
+                    const credits = window._currentCredits;
+                    const success = await Utils.activatePayment(amount, credits);
+                    if (success) {
+                        statusEl.textContent = '✅ Payment activated!';
+                        statusEl.style.color = 'var(--success)';
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1500);
+                    } else {
+                        statusEl.textContent = '❌ Could not activate. Please try again.';
+                        statusEl.style.color = 'var(--danger)';
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = '✅ I Have Paid — Activate My Session';
+                    }
                 }
             });
 
@@ -178,26 +229,40 @@
         });
 
         const UPI_ID = 'krishnabajpai62@okaxis';
-        const MERCHANT_NAME = 'ASR Services AI Screener';
+        const MERCHANT_NAME = 'ASR Services';
 
-        function openPayment(amount, name, credits) {
+        async function openPayment(amount, name, credits) {
             window._currentAmount = amount;
             window._currentCredits = credits;
             document.getElementById('planName').textContent = `Activate ${name} Plan`;
             document.getElementById('planPrice').textContent = `Amount: ₹${amount}`;
 
-            const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount}&cu=INR&tn=${encodeURIComponent('ASR Services AI Screener ' + name)}`;
+            const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount}&cu=INR&tn=${encodeURIComponent('ASR Services ' + name)}`;
 
             document.getElementById('upiDeepLink').href = upiUrl;
             const qrcodeEl = document.getElementById('qrcode');
             qrcodeEl.innerHTML = '';
             new QRCode(qrcodeEl, { text: upiUrl, width: 200, height: 200 });
 
+            // Create order via backend
+            try {
+                const session = await Utils.getSession();
+                if (session && session.email) {
+                    const order = await Utils.createOrder(session.email, name, amount, credits);
+                    if (order && order.id) {
+                        window._currentOrderId = order.id;
+                    }
+                }
+            } catch (e) {
+                console.log('Backend order creation fallback:', e);
+            }
+
             document.getElementById('paymentModalOverlay').classList.add('active');
         }
 
         function closePayment() {
             document.getElementById('paymentModalOverlay').classList.remove('active');
+            document.getElementById('paymentStatus').textContent = '';
         }
     </script>
 </body>
