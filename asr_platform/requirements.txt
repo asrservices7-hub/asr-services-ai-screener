@@ -1,0 +1,21 @@
+# ASR Platform — Requirements
+# pip install -r requirements.txt
+
+# Core
+python-dotenv>=1.0.0
+requests>=2.31.0
+schedule>=1.2.0
+pydantic>=2.0.0
+
+# WhatsApp Bot
+flask>=3.0.0
+
+# Resume parsing
+pdfplumber>=0.10.0
+
+# Cloud database (optional — add when scaling beyond 50K candidates)
+# supabase>=2.0.0
+
+# AI (optional — works in rule-based mode without)
+# langchain-openai>=0.1.0
+# openai>=1.0.0

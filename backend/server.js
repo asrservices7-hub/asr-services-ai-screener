@@ -12,10 +12,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // --- Supabase Admin Client (service role) ---
-const supabase = createClient(
-  process.env.SUPABASE_URL || 'https://voqpifhgvizudlggsuzj.supabase.co',
-  process.env.SUPABASE_SERVICE_KEY
-);
+let supabase = null;
+if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+  supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+} else {
+  console.warn("⚠️  Supabase keys missing. Database features will be disabled.");
+}
 
 // --- Middleware ---
 app.use(express.json());
@@ -169,30 +171,54 @@ app.get('/api/orders/:email', async (req, res) => {
   }
 });
 
-// --- Get Payment Stats (Admin) ---
-app.get('/api/admin/stats', async (req, res) => {
-  try {
-    const { data: orders } = await supabase
-      .from('orders')
-      .select('amount, status, created_at')
-      .eq('status', 'paid');
+// --- Agent API Bridge (Bridge to Python Engines) ---
+const { exec } = require('child_process');
+const path = require('path');
 
-    const totalRevenue = (orders || []).reduce((sum, o) => sum + o.amount, 0);
-    const totalOrders = (orders || []).length;
+const PROJECT_ROOT = path.resolve(__dirname, '..');
 
-    const { count: totalUsers } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true });
+app.get('/api/agents/stats', (req, res) => {
+  const cmd = `python3 asr_platform/asr_platform.py --dashboard --json`;
+  exec(cmd, { cwd: PROJECT_ROOT }, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Exec error: ${error}`);
+      return res.status(500).json({ error: 'Failed to Fetch Agent Stats' });
+    }
+    try {
+      res.json(JSON.parse(stdout));
+    } catch (e) {
+      res.json({ output: stdout });
+    }
+  });
+});
 
-    res.json({
-      totalRevenue,
-      totalOrders,
-      totalUsers: totalUsers || 0,
-      currency: 'INR'
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
+app.post('/api/agents/match', (req, res) => {
+  const { query } = req.body;
+  if (!query) return res.status(400).json({ error: 'Missing query' });
+
+  const cmd = `python3 asr_platform/asr_platform.py --match "${query}" --json`;
+  exec(cmd, { cwd: PROJECT_ROOT }, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Exec error: ${error}`);
+      return res.status(500).json({ error: 'Matching Engine Failed' });
+    }
+    try {
+      res.json(JSON.parse(stdout));
+    } catch (e) {
+      res.json({ output: stdout });
+    }
+  });
+});
+
+app.post('/api/agents/discover', (req, res) => {
+  const cmd = `python3 asr_growth_engine/growth_engine.py --discover`;
+  exec(cmd, { cwd: PROJECT_ROOT }, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Exec error: ${error}`);
+      return res.status(500).json({ error: 'Discovery Engine Failed' });
+    }
+    res.json({ output: stdout, message: 'Discovery job started' });
+  });
 });
 
 // --- Start Server ---

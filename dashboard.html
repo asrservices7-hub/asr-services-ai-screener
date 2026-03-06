@@ -57,17 +57,13 @@
 
         <div class="page-hero">
             <div class="text-center animate-fadeInUp" style="margin-bottom: 40px;">
-                <span class="badge">Paid Session Active</span>
+                <span class="badge">Ready to Screen</span>
                 <h1 style="margin-top: 16px;">Configure Your <span style="color:var(--accent-primary);">Criteria</span>
                 </h1>
                 <p class="subtitle">Upload your job description and resumes. Our AI will rank them based on your exact
                     requirements.</p>
             </div>
 
-            <div id="batchUsedWarning" class="alert alert-warning hidden"
-                style="max-width: 700px; margin: 0 auto 32px;">
-                ⚠️ Batch limit reached. Please purchase more credits to screen again.
-            </div>
 
             <div id="screeningForm" style="max-width: 900px; margin: 0 auto;">
 
@@ -90,8 +86,19 @@
                         <label>Full Job Description</label>
                         <textarea id="jdInput" class="form-textarea"
                             placeholder="Paste the complete responsibilities and requirements..."></textarea>
-                        <div style="text-align:right; font-size:0.75rem; color:var(--text-muted); margin-top:4px;"
-                            id="jdCharCount">0 characters (min 50)</div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <label class="btn btn-secondary btn-sm"
+                                    style="cursor:pointer; margin:0; padding:6px 14px; font-size:0.8rem;">
+                                    📎 Upload JD File
+                                    <input type="file" id="jdFileInput" accept=".pdf,.doc,.docx,.txt,.text"
+                                        style="display:none;">
+                                </label>
+                                <span style="font-size:0.75rem; color:var(--text-muted);">PDF, Word, TXT</span>
+                            </div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);" id="jdCharCount">0 characters (min
+                                50)</div>
+                        </div>
                     </div>
                 </div>
 
@@ -146,10 +153,10 @@
                     </div>
 
                     <div class="upload-zone" id="uploadZone">
-                        <input type="file" id="resumeFiles" multiple accept=".pdf,.txt,.docx">
+                        <input type="file" id="resumeFiles" multiple accept=".pdf,.txt,.text,.doc,.docx">
                         <div class="upload-icon">📂</div>
                         <div class="upload-text"><strong>Drag & Drop</strong> resumes or click to browse</div>
-                        <div class="upload-hint">Support PDF, TXT, DOCX | Max 1,000 files</div>
+                        <div class="upload-hint">PDF, Word (.doc/.docx), TXT — Up to 1,000 files</div>
                     </div>
 
                     <div id="fileListContainer" class="hidden mt-3">
@@ -164,7 +171,7 @@
 
                 <button id="startBtn" class="btn btn-primary btn-block btn-lg animate-fadeInUp animate-delay-4"
                     disabled>
-                    🚀 Start Screening (Uses 1 Credit)
+                    🚀 Start Screening
                 </button>
                 <div id="errorEl" class="form-error text-center mt-2"></div>
 
@@ -205,9 +212,7 @@
             await Utils.renderNavbar('navbar-container');
 
             if (await Utils.hasUsedBatch()) {
-                document.getElementById('batchUsedWarning').classList.remove('hidden');
-                document.getElementById('screeningForm').style.opacity = '0.5';
-                document.getElementById('screeningForm').style.pointerEvents = 'none';
+                // No-op in testing mode
             }
 
             const elements = {
@@ -238,15 +243,33 @@
 
             const validate = () => {
                 const jdOk = elements.jdInput.value.length >= 50;
-                const skillsOk = skills.length > 0;
                 const filesOk = files.length > 0;
-                elements.start.disabled = !(jdOk && skillsOk && filesOk);
+                // Skills are optional — JD + files are enough to start
+                elements.start.disabled = !(jdOk && filesOk);
             };
 
             // JD Count
             elements.jdInput.addEventListener('input', () => {
                 elements.jdCount.textContent = `${elements.jdInput.value.length} characters (min 50)`;
                 validate();
+            });
+
+            // JD File Upload
+            document.getElementById('jdFileInput').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                try {
+                    const text = await Screener.extractText(file);
+                    if (text) {
+                        elements.jdInput.value = text;
+                        elements.jdCount.textContent = `${text.length} characters (min 50) — loaded from ${file.name}`;
+                        validate();
+                    } else {
+                        alert('Could not extract text from the file. Please try a different format.');
+                    }
+                } catch (err) {
+                    alert('Error reading file: ' + err.message);
+                }
             });
 
             // Skills
@@ -257,11 +280,24 @@
             };
             window._remSkill = (i) => { skills.splice(i, 1); renderTags(); validate(); };
 
-            elements.addBtn.onclick = () => {
-                const val = elements.skillInput.value.trim();
-                if (val && !skills.includes(val)) { skills.push(val); elements.skillInput.value = ''; renderTags(); validate(); }
+            const addSkill = () => {
+                const raw = elements.skillInput.value;
+                // Split on comma or semicolon for bulk add
+                const parts = raw.split(/[,;]+/).map(s => s.trim()).filter(s => s && !skills.includes(s));
+                if (parts.length > 0) {
+                    skills.push(...parts);
+                    elements.skillInput.value = '';
+                    renderTags();
+                    validate();
+                }
             };
-            elements.skillInput.onkeypress = (e) => { if (e.key === 'Enter') elements.addBtn.onclick(); };
+            elements.addBtn.onclick = addSkill;
+            elements.skillInput.onkeypress = (e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    addSkill();
+                }
+            };
 
             // Files
             const updateFiles = (newFiles) => {
@@ -279,6 +315,13 @@
 
             // Start
             elements.start.onclick = async () => {
+                // Auto-capture any lingering text in skill input
+                if (elements.skillInput.value.trim()) {
+                    const parts = elements.skillInput.value.split(/[,;]+/).map(s => s.trim()).filter(s => s && !skills.includes(s));
+                    skills.push(...parts);
+                    elements.skillInput.value = '';
+                    renderTags();
+                }
                 elements.progOverlay.classList.add('active');
                 try {
                     const config = {
@@ -296,10 +339,10 @@
                         elements.progText.textContent = `Processing ${done}/${total}: ${last}`;
                     });
 
-                    // Save to Database
-                    await Utils.saveScreening(config, results);
+                    // Save to Database (non-blocking, won't stop results if DB fails)
+                    try { await Utils.saveScreening(config, results); } catch (e) { console.log('DB save skipped:', e); }
 
-                    await Utils.markBatchUsed();
+                    // Skip batch marking in testing mode
                     sessionStorage.setItem('rs_results', JSON.stringify(results));
                     window.location.href = 'results.html';
 

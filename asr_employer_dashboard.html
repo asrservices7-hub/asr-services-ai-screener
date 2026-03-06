@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASR Employer Dashboard - Recruitment Reimagined</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --accent-color: #6366f1;
+            --secondary-accent: #a855f7;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-color), var(--secondary-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        .full-width {
+            grid-column: span 12;
+        }
+
+        .two-thirds {
+            grid-column: span 8;
+        }
+
+        .one-third {
+            grid-column: span 4;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .candidate-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .candidate-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .candidate-item:last-child {
+            border-bottom: none;
+        }
+
+        .score-badge {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--accent-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-color), var(--secondary-accent));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .vibrant-glow {
+            position: fixed;
+            top: -20%;
+            left: -10%;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+
+            .two-thirds,
+            .one-third {
+                grid-column: span 12;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="vibrant-glow"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001'; // Update this to your Render URL after deployment
+
+        async function fetchStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/agents/stats`);
+                const data = await response.json();
+
+                if (data.total_leads !== undefined) {
+                    document.getElementById('total-leads').textContent = data.total_leads.toLocaleString();
+                    document.getElementById('cand-score').textContent = "84%"; // Placeholder or calc from data
+                    document.getElementById('revenue').textContent = `₹${(data.revenue || 0).toLocaleString()}`;
+
+                    // Update cities
+                    if (data.cities) {
+                        const activityEl = document.getElementById('recent-activity');
+                        activityEl.innerHTML = data.cities.map(c =>
+                            `<p>• <strong>${c.city}</strong>: ${c.count} leads found.</p>`
+                        ).join('');
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch stats:", err);
+            }
+        }
+
+        async function runSearch() {
+            const query = prompt("Enter job requirements (e.g. 'BPO Voice Lucknow'):");
+            if (!query) return;
+
+            const btn = document.querySelector('header .btn');
+            const originalText = btn.textContent;
+            btn.textContent = "Searching...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/agents/match`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                const matches = await response.json();
+
+                if (Array.isArray(matches)) {
+                    const listEl = document.getElementById('candidate-list');
+                    listEl.innerHTML = matches.map(c => `
+                        <div class="candidate-item">
+                            <div>
+                                <div style="font-weight: 600;">${c.name}</div>
+                                <div style="font-size: 0.875rem; color: var(--text-secondary);">${c.primary_skill} | ${c.city}</div>
+                            </div>
+                            <div class="score-badge">${c.overall_score}% Match</div>
+                        </div>
+                    `).join('');
+                } else {
+                    alert("No matches found or engine error.");
+                }
+            } catch (err) {
+                console.error("Search error:", err);
+                alert("Could not connect to ASR Engine.");
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        document.querySelector('header .btn').onclick = runSearch;
+        window.onload = fetchStats;
+    </script>
+</body>
+
+</html>

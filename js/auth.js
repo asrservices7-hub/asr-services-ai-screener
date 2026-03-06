@@ -101,7 +101,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         } catch (err) {
-            showError('An unexpected error occurred. Please try again.');
+            console.error(err);
+            showError('An unexpected error occurred: ' + (err.message || String(err)));
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
         }

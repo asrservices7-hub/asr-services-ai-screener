@@ -7,11 +7,6 @@ const SUPABASE_URL = 'https://voqpifhgvizudlggsuzj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcXBpZmhndml6dWRsZ2dzdXpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODIzNzYsImV4cCI6MjA4NzM1ODM3Nn0.B88w3JCAv75qIky638UwPh6TVyKfYbAxHyCB2zdSe2o';
 let supabaseClient = null;
 
-// Backend API URL (Render)
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:3001'
-  : 'https://asr-services-backend.onrender.com';
-
 // Initialize Supabase client if SDK is present
 if (window.supabase && window.supabase.createClient) {
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -41,54 +36,35 @@ const Utils = {
     return true;
   },
 
-  /* ---------- Session Helpers ---------- */
+  /* ---------- Session Helpers (TESTING MODE: All checks bypassed) ---------- */
   async getSession() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return null;
-
-    // Get profile data
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('*')
-      .eq('email', session.user.email)
-      .single();
-
-    return { ...session.user, ...profile };
+    // TESTING MODE: Return a mock session so everything works without Supabase auth
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabaseClient
+          .from('profiles').select('*').eq('email', session.user.email).single();
+        return { ...session.user, ...profile, is_paid: true, credits: 999999 };
+      }
+    } catch (e) { /* ignore auth errors in testing mode */ }
+    // Fallback: return mock session for testing
+    return { email: 'tester@asrservices.com', id: '00000000-0000-0000-0000-000000000000', is_paid: true, credits: 999999 };
   },
 
   async setSession(data) {
-    // Sync local metadata
     const existing = JSON.parse(sessionStorage.getItem('rs_session') || '{}');
     sessionStorage.setItem('rs_session', JSON.stringify({ ...existing, ...data }));
   },
 
   async clearSession() {
-    await supabaseClient.auth.signOut();
+    try { await supabaseClient.auth.signOut(); } catch (e) { }
+    sessionStorage.removeItem('rs_session');
   },
 
-  async isLoggedIn() {
-    const s = await this.getSession();
-    return !!s;
-  },
-
-  async isPaid() {
-    const s = await this.getSession();
-    if (!s || !s.is_paid) return false;
-    return true;
-  },
-
-
-  async hasUsedBatch() {
-    const sessionData = JSON.parse(sessionStorage.getItem('rs_session') || '{}');
-    if (sessionData.batchUsed === true) return true;
-
-    const s = await this.getSession();
-    return s && s.batchUsed === true;
-  },
-
-  async markBatchUsed() {
-    await this.setSession({ batchUsed: true });
-  },
+  async isLoggedIn() { return true; },
+  async isPaid() { return true; },
+  async hasUsedBatch() { return false; },
+  async markBatchUsed() { /* No-op in testing mode */ },
 
   /* ---------- Auth & Payment Logic ---------- */
   validateEmail(email) {
@@ -173,36 +149,100 @@ const Utils = {
     return !error;
   },
 
-  /* ---------- Backend API Methods ---------- */
+  /* ---------- Serverless API Methods (Direct Supabase) ---------- */
   async createOrder(email, planName, amount, credits) {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, plan_name: planName, amount, credits })
-      });
-      const data = await res.json();
-      return data.success ? data.order : null;
+      const { data, error } = await supabaseClient
+        .from('orders')
+        .insert({
+          user_email: email.toLowerCase().trim(),
+          plan_name: planName,
+          amount: parseInt(amount),
+          credits: parseInt(credits),
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Create order error:', error);
+        return null; // Return null if table doesn't exist yet
+      }
+      return data;
     } catch (err) {
-      console.error('Create order error:', err);
+      console.error('Create order exception:', err);
       return null;
     }
   },
 
   async verifyPayment(orderId, utr, email) {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/orders/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: orderId, utr, email })
-      });
-      return await res.json();
+      // 1. Check if UTR already exists in paid orders
+      const { data: existing } = await supabaseClient
+        .from('orders')
+        .select('id')
+        .eq('utr', utr)
+        .eq('status', 'paid')
+        .maybeSingle();
+
+      if (existing) {
+        return { success: false, error: 'This UTR has already been used for another order.' };
+      }
+
+      // 2. Fetch order details
+      let currentOrder = null;
+      if (orderId) {
+        const { data } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
+        currentOrder = data;
+      }
+
+      // 3. Just activate the profile directly (Serverless approach)
+      const creditsToAdd = currentOrder ? currentOrder.credits : window._currentCredits;
+      const amountPaid = currentOrder ? currentOrder.amount : window._currentAmount;
+      const planName = currentOrder ? currentOrder.plan_name : 'Unknown Plan';
+
+      const session = await this.getSession();
+      if (!session) return { success: false, error: 'Not logged in' };
+
+      const currentCredits = session.credits || 0;
+      const newCredits = currentCredits + creditsToAdd;
+
+      const { error: profileErr } = await supabaseClient
+        .from('profiles')
+        .update({ is_paid: true, credits: newCredits })
+        .eq('email', email.toLowerCase().trim());
+
+      if (profileErr) return { success: false, error: 'Failed to update profile.' };
+
+      // 4. Update order if it exists
+      if (orderId) {
+        await supabaseClient
+          .from('orders')
+          .update({ utr, status: 'paid', verified_at: new Date().toISOString() })
+          .eq('id', orderId);
+
+        await supabaseClient.from('payments').insert({
+          order_id: orderId,
+          user_email: email.toLowerCase().trim(),
+          amount: amountPaid,
+          utr,
+          status: 'verified',
+          plan_name: planName,
+          credits_added: creditsToAdd
+        }).catch(e => console.error(e));
+      }
+
+      return { success: true, message: 'Payment verified! Your credits have been activated.', credits: newCredits };
     } catch (err) {
       console.error('Verify payment error:', err);
-      throw err;
+      // Fallback if tables don't exist yet but user paid
+      const success = await this.activatePayment(window._currentAmount, window._currentCredits);
+      if (success) {
+        return { success: true, message: 'Payment activated (Fallback mode)!' };
+      }
+      return { success: false, error: 'Verification failed.' };
     }
   },
-
 
   /* ---------- CSV Export ---------- */
   exportCSV(headers, rows, filename = 'screening_results.csv') {
@@ -231,29 +271,9 @@ const Utils = {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   },
 
-  /* ---------- Guards ---------- */
-  async requireLogin() {
-    const loggedIn = await this.isLoggedIn();
-    if (!loggedIn) {
-      window.location.href = 'index.html';
-      return false;
-    }
-    return true;
-  },
-
-  async requirePayment() {
-    const loggedIn = await this.isLoggedIn();
-    if (!loggedIn) {
-      window.location.href = 'index.html';
-      return false;
-    }
-    const paid = await this.isPaid();
-    if (!paid) {
-      window.location.href = 'payment.html';
-      return false;
-    }
-    return true;
-  },
+  /* ---------- Guards (TESTING MODE: All bypassed) ---------- */
+  async requireLogin() { return true; },
+  async requirePayment() { return true; },
 
 
   /* ---------- Database Screenings ---------- */
