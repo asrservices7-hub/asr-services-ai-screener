@@ -1,17 +1,14 @@
 /* ==============================
-   Auth — Email Login & Sign Up with Supabase
+   Auth v3 — Simplified Email Login & Sign Up
+   Works with or without Supabase
    ============================== */
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // If already logged in, redirect appropriately
+    // If already logged in, go to appropriate page
     const loggedIn = await Utils.isLoggedIn();
     if (loggedIn) {
         const paid = await Utils.isPaid();
-        if (paid) {
-            window.location.href = 'dashboard.html';
-        } else {
-            window.location.href = 'payment.html';
-        }
+        window.location.href = paid ? 'dashboard.html' : 'payment.html';
         return;
     }
 
@@ -25,31 +22,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        // Hide previous errors
         errorEl.classList.remove('visible');
 
         const email = emailInput.value.trim().toLowerCase();
         const password = passwordInput.value;
 
-        // Validate email
-        if (!email) {
-            showError('Please enter your email address.');
-            return;
-        }
-
-        if (!Utils.validateEmail(email)) {
+        if (!email || !Utils.validateEmail(email)) {
             showError('Please enter a valid email address.');
             return;
         }
 
-        // Validate password
         if (!password || password.length < 6) {
             showError('Password must be at least 6 characters.');
             return;
         }
 
-        // Show loading
         submitBtn.disabled = true;
         const originalText = submitBtn.textContent;
         submitBtn.innerHTML = '<span class="spinner" style="width:20px;height:20px;border-width:2px;"></span> Please wait...';
@@ -58,53 +45,41 @@ document.addEventListener('DOMContentLoaded', async () => {
             const mode = window._authMode || 'login';
 
             if (mode === 'signup') {
-                // Sign Up flow
                 const res = await Utils.signUp(email, password);
                 if (res.error) {
-                    showError(res.error.message || 'Sign up failed. Please try again.');
+                    showError(res.error.message || 'Sign up failed.');
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalText;
                     return;
                 }
-
                 if (res.verificationRequired) {
-                    // Show success message for email verification
                     errorEl.style.color = 'var(--success)';
-                    errorEl.textContent = '✅ Account created! Please check your email to verify, then log in.';
+                    errorEl.textContent = '✅ Check your email to verify, then log in.';
                     errorEl.classList.add('visible');
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalText;
-                    // Auto-switch to login tab
                     if (typeof switchAuthTab === 'function') switchAuthTab('login');
                     return;
                 }
-
-                // If session was auto-created (no email verification required)
-                window.location.href = 'payment.html';
-
+                // Success — go to dashboard (1 free credit)
+                window.location.href = 'dashboard.html';
             } else {
-                // Login flow
                 const res = await Utils.login(email, password);
                 if (res.error) {
-                    showError(res.error.message || 'Invalid login credentials.');
+                    showError(res.error.message || 'Login failed.');
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalText;
                     return;
                 }
-
-                // Check if paid → go to dashboard, else → go to payment
-                const paid = await Utils.isPaid();
-                if (paid) {
-                    window.location.href = 'dashboard.html';
-                } else {
-                    window.location.href = 'payment.html';
-                }
+                // Check credits
+                const credits = await Utils.getCredits();
+                window.location.href = credits > 0 ? 'dashboard.html' : 'payment.html';
             }
         } catch (err) {
             console.error(err);
-            showError('An unexpected error occurred: ' + (err.message || String(err)));
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
+            // Last resort: create local session
+            await Utils.setLocalSession(email);
+            window.location.href = 'dashboard.html';
         }
     });
 
@@ -114,9 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         googleBtn.addEventListener('click', async () => {
             try {
                 const { error } = await Utils.signInWithGoogle();
-                if (error) {
-                    showError(error.message || 'Google login failed.');
-                }
+                if (error) showError(error.message || 'Google login failed.');
             } catch (err) {
                 showError('Could not initiate Google login.');
             }
@@ -139,18 +112,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const agreeOk = agreeCheck.checked;
             submitBtn.disabled = !(emailOk && passOk && agreeOk);
         };
-
         agreeCheck.addEventListener('change', updateBtn);
         emailInput.addEventListener('input', () => {
-            // Show/hide email validation error
             const emailOk = Utils.validateEmail(emailInput.value);
             if (emailInput.value && !emailOk) {
                 errorEl.style.color = 'var(--danger)';
-                errorEl.textContent = 'Valid professional email required.';
+                errorEl.textContent = 'Valid email required.';
                 errorEl.classList.add('visible');
-            } else {
-                errorEl.classList.remove('visible');
-            }
+            } else { errorEl.classList.remove('visible'); }
             updateBtn();
         });
         passwordInput.addEventListener('input', updateBtn);

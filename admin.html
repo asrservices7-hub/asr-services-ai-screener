@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASR Admin — Command Center</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050510;
+            --bg2: rgba(255, 255, 255, 0.03);
+            --bg3: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.07);
+            --cyan: #00e5ff;
+            --purple: #a855f7;
+            --green: #10b981;
+            --red: #f43f5e;
+            --amber: #f59e0b;
+            --blue: #3b82f6;
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --dim: #475569;
+            --r: 14px;
+            --t: all .3s cubic-bezier(.4, 0, .2, 1)
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 50% at 10% 20%, rgba(168, 85, 247, .1), transparent), radial-gradient(ellipse 60% 40% at 90% 80%, rgba(0, 229, 255, .08), transparent);
+            pointer-events: none;
+            z-index: 0
+        }
+
+        .wrap {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1
+        }
+
+        /* Header */
+        .hdr {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .logo-i {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem
+        }
+
+        .logo-t {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -.5px
+        }
+
+        .logo-t span {
+            color: var(--cyan)
+        }
+
+        .hdr-r {
+            display: flex;
+            align-items: center;
+            gap: 14px
+        }
+
+        .hdr-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: .85rem;
+            font-weight: 500;
+            transition: var(--t)
+        }
+
+        .hdr-link:hover {
+            color: var(--text)
+        }
+
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: .8rem;
+            font-weight: 600
+        }
+
+        .pill-g {
+            background: rgba(16, 185, 129, .1);
+            border: 1px solid rgba(16, 185, 129, .3);
+            color: var(--green)
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 10px currentColor;
+            animation: pulse 2s infinite
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .6;
+                transform: scale(.8)
+            }
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            margin-bottom: 24px
+        }
+
+        .st {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 18px;
+            transition: var(--t);
+            position: relative;
+            overflow: hidden
+        }
+
+        .st:hover {
+            background: var(--bg3);
+            transform: translateY(-2px)
+        }
+
+        .st-i {
+            font-size: 1.1rem;
+            margin-bottom: 8px
+        }
+
+        .st-v {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1.1;
+            margin-bottom: 3px
+        }
+
+        .st-l {
+            color: var(--muted);
+            font-size: .7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .8px
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg2);
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border)
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: .85rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--muted);
+            border: none;
+            background: none;
+            transition: var(--t);
+            font-family: inherit
+        }
+
+        .tab.active {
+            background: var(--bg3);
+            color: var(--cyan);
+            box-shadow: 0 0 15px rgba(0, 229, 255, .1)
+        }
+
+        .tab:hover {
+            color: var(--text)
+        }
+
+        /* Main */
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 20px;
+            margin-bottom: 32px
+        }
+
+        .panel {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 20px;
+            max-height: 700px;
+            overflow-y: auto
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        /* Agent Cards */
+        .agents {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px
+        }
+
+        .ag {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 16px;
+            transition: var(--t);
+            cursor: pointer
+        }
+
+        .ag:hover {
+            background: var(--bg3);
+            border-color: rgba(255, 255, 255, .12)
+        }
+
+        .ag.running {
+            border-color: rgba(0, 229, 255, .4);
+            box-shadow: 0 0 20px rgba(0, 229, 255, .1)
+        }
+
+        .ag-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px
+        }
+
+        .ag-icon {
+            font-size: 1.3rem
+        }
+
+        .ag-st {
+            font-size: .65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--green);
+            display: flex;
+            align-items: center;
+            gap: 3px
+        }
+
+        .ag-nm {
+            font-weight: 700;
+            font-size: .9rem;
+            margin-bottom: 3px
+        }
+
+        .ag-desc {
+            color: var(--dim);
+            font-size: .75rem;
+            line-height: 1.4
+        }
+
+        .ag-btn {
+            margin-top: 10px;
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            border-radius: 8px;
+            font-size: .8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--t);
+            font-family: inherit
+        }
+
+        .ag-btn:hover {
+            background: rgba(0, 229, 255, .1);
+            border-color: var(--cyan);
+            color: var(--cyan)
+        }
+
+        .ag-btn:disabled {
+            opacity: .5;
+            cursor: not-allowed
+        }
+
+        .ag-btn.busy {
+            background: rgba(0, 229, 255, .1);
+            border-color: var(--cyan);
+            color: var(--cyan);
+            animation: pulse 1.5s infinite
+        }
+
+        .run-all {
+            padding: 12px;
+            background: linear-gradient(135deg, var(--green), var(--cyan));
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: .95rem;
+            cursor: pointer;
+            transition: var(--t);
+            font-family: inherit;
+            width: 100%;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, .3)
+        }
+
+        .run-all:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(16, 185, 129, .4)
+        }
+
+        .run-all:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none
+        }
+
+        /* Table */
+        .tbl {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        .tbl th,
+        .tbl td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: .85rem
+        }
+
+        .tbl th {
+            color: var(--dim);
+            font-size: .7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .8px
+        }
+
+        .tbl tr:hover td {
+            background: var(--bg3)
+        }
+
+        .badge-s {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-size: .75rem;
+            font-weight: 700
+        }
+
+        .bg-g {
+            background: rgba(16, 185, 129, .12);
+            color: var(--green);
+            border: 1px solid rgba(16, 185, 129, .25)
+        }
+
+        .bg-a {
+            background: rgba(245, 158, 11, .12);
+            color: var(--amber);
+            border: 1px solid rgba(245, 158, 11, .25)
+        }
+
+        .bg-r {
+            background: rgba(244, 63, 94, .12);
+            color: var(--red);
+            border: 1px solid rgba(244, 63, 94, .25)
+        }
+
+        .bg-b {
+            background: rgba(59, 130, 246, .12);
+            color: var(--blue);
+            border: 1px solid rgba(59, 130, 246, .25)
+        }
+
+        /* Log */
+        .log-e {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            animation: fadeIn .3s ease
+        }
+
+        .log-e:last-child {
+            border-bottom: none
+        }
+
+        .log-h {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3px
+        }
+
+        .log-ag {
+            font-size: .8rem;
+            font-weight: 600;
+            color: var(--cyan)
+        }
+
+        .log-tm {
+            font-size: .7rem;
+            color: var(--dim)
+        }
+
+        .log-msg {
+            font-size: .8rem;
+            color: var(--muted);
+            line-height: 1.4
+        }
+
+        .log-ok {
+            color: var(--green)
+        }
+
+        .log-err {
+            color: var(--red)
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-6px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* Search */
+        .search {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px
+        }
+
+        .search input {
+            flex: 1;
+            background: rgba(0, 0, 0, .3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-size: .9rem;
+            font-family: inherit;
+            outline: none;
+            transition: var(--t)
+        }
+
+        .search input:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 3px rgba(0, 229, 255, .08)
+        }
+
+        .search input::placeholder {
+            color: var(--dim)
+        }
+
+        .search button {
+            padding: 12px 22px;
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 700;
+            font-size: .85rem;
+            cursor: pointer;
+            transition: var(--t);
+            font-family: inherit;
+            white-space: nowrap
+        }
+
+        .search button:hover {
+            transform: scale(1.02)
+        }
+
+        .search button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+            transform: none
+        }
+
+        /* Guide */
+        .guide {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 20px;
+            margin-bottom: 20px
+        }
+
+        .guide h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: var(--cyan)
+        }
+
+        .guide-item {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 10px
+        }
+
+        .guide-item:last-child {
+            border-bottom: none
+        }
+
+        .guide-num {
+            width: 24px;
+            height: 24px;
+            background: var(--bg3);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .75rem;
+            font-weight: 700;
+            color: var(--cyan);
+            flex-shrink: 0
+        }
+
+        .guide-text {
+            font-size: .82rem;
+            color: var(--muted);
+            line-height: 1.5
+        }
+
+        .guide-text strong {
+            color: var(--text)
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none
+        }
+
+        .tab-content.active {
+            display: block
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 24px 0;
+            border-top: 1px solid var(--border);
+            color: var(--dim);
+            font-size: .8rem
+        }
+
+        .footer a {
+            color: var(--cyan);
+            text-decoration: none
+        }
+
+        @media(max-width:1024px) {
+            .stats {
+                grid-template-columns: repeat(3, 1fr)
+            }
+
+            .main {
+                grid-template-columns: 1fr
+            }
+
+            .agents {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media(max-width:640px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .hdr {
+                flex-direction: column;
+                gap: 12px
+            }
+
+            .search {
+                flex-direction: column
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <!-- Header -->
+        <header class="hdr">
+            <div class="logo">
+                <div class="logo-i">⚡</div>
+                <div class="logo-t">ASR <span>Admin</span></div>
+            </div>
+            <div class="hdr-r">
+                <a href="index.html" class="hdr-link">User Site</a>
+                <a href="agents.html" class="hdr-link">Agents View</a>
+                <div class="pill pill-g" id="srv-status">
+                    <div class="dot"></div>Connecting...
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <div class="stats" id="stats-grid">
+            <div class="st">
+                <div class="st-i">🏢</div>
+                <div class="st-v" id="s-leads">-</div>
+                <div class="st-l">Leads</div>
+            </div>
+            <div class="st">
+                <div class="st-i">👥</div>
+                <div class="st-v" id="s-cand">-</div>
+                <div class="st-l">Candidates</div>
+            </div>
+            <div class="st">
+                <div class="st-i">📧</div>
+                <div class="st-v" id="s-out">-</div>
+                <div class="st-l">Outreach Sent</div>
+            </div>
+            <div class="st">
+                <div class="st-i">📅</div>
+                <div class="st-v" id="s-meet">-</div>
+                <div class="st-l">Meetings</div>
+            </div>
+            <div class="st">
+                <div class="st-i">🎯</div>
+                <div class="st-v" id="s-match">-</div>
+                <div class="st-l">Matches</div>
+            </div>
+            <div class="st">
+                <div class="st-i">🗓️</div>
+                <div class="st-v" id="s-int">-</div>
+                <div class="st-l">Interviews</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('agents')">🤖 Agents</button>
+            <button class="tab" onclick="switchTab('leads')">🏢 Leads</button>
+            <button class="tab" onclick="switchTab('candidates')">👥 Candidates</button>
+            <button class="tab" onclick="switchTab('meetings')">📅 Meetings</button>
+            <button class="tab" onclick="switchTab('guide')">📖 Guide</button>
+        </div>
+
+        <!-- Tab: Agents -->
+        <div class="tab-content active" id="tc-agents">
+            <!-- Search -->
+            <div class="search">
+                <input type="text" id="match-q" placeholder="AI Match: e.g. 'BPO Voice Lucknow night shift 15000'"
+                    value="BPO Lucknow">
+                <button onclick="doMatch()" id="match-btn">🎯 Match</button>
+            </div>
+            <div id="match-results" style="margin-bottom:16px"></div>
+
+            <div class="main">
+                <div>
+                    <button class="run-all" id="run-all-btn" onclick="runAgent('all')">🚀 Run All 7 Agents — Full Daily
+                        Cycle</button>
+                    <div class="agents" id="agents-grid"></div>
+                </div>
+                <div>
+                    <div class="panel-title">📋 Live Activity Log</div>
+                    <div class="panel" id="log-panel">
+                        <div class="log-e">
+                            <div class="log-h"><span class="log-ag">System</span><span class="log-tm">now</span></div>
+                            <div class="log-msg">Initializing...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Leads -->
+        <div class="tab-content" id="tc-leads">
+            <div class="panel" style="max-height:none;overflow:auto">
+                <div class="panel-title">🏢 Discovered Leads <span id="leads-count"
+                        style="color:var(--muted);font-weight:400;font-size:.8rem"></span></div>
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>City</th>
+                            <th>Type</th>
+                            <th>HR Contact</th>
+                            <th>Role</th>
+                            <th>Salary</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leads-table">
+                        <tr>
+                            <td colspan="7" style="text-align:center;color:var(--muted)">Run Lead Agent first</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab: Candidates -->
+        <div class="tab-content" id="tc-candidates">
+            <div class="panel" style="max-height:none;overflow:auto">
+                <div class="panel-title">👥 Candidate Database <span id="cand-count"
+                        style="color:var(--muted);font-weight:400;font-size:.8rem"></span></div>
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Skill</th>
+                            <th>City</th>
+                            <th>Exp</th>
+                            <th>Score</th>
+                            <th>Source</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cand-table">
+                        <tr>
+                            <td colspan="7" style="text-align:center;color:var(--muted)">Run Candidate Agent first</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab: Meetings -->
+        <div class="tab-content" id="tc-meetings">
+            <div class="panel" style="max-height:none;overflow:auto">
+                <div class="panel-title">📅 Booked Meetings <span id="meet-count"
+                        style="color:var(--muted);font-weight:400;font-size:.8rem"></span></div>
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>HR</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="meet-table">
+                        <tr>
+                            <td colspan="5" style="text-align:center;color:var(--muted)">Run Meeting Agent first</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab: Guide -->
+        <div class="tab-content" id="tc-guide">
+            <div class="guide">
+                <h3>📖 How ASR 7-Agent System Works</h3>
+                <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Each agent handles a specific part of
+                    the recruitment pipeline. Run them individually or all together for a complete daily cycle.</p>
+                <div class="guide-item">
+                    <div class="guide-num">1</div>
+                    <div class="guide-text"><strong>🔍 Lead Generation</strong> — Discovers companies actively hiring.
+                        Scans LinkedIn, Google Maps, Naukri, and Indeed for BPO/IT companies in target cities. Collects
+                        company name, HR contact, role needed, and salary range. <em>Output: New leads appear in the
+                            Leads tab.</em></div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-num">2</div>
+                    <div class="guide-text"><strong>📧 Email Outreach</strong> — Takes new leads and sends personalized
+                        messages. Uses email for corporate contacts and WhatsApp for direct HR numbers. Tracks open
+                        rates and responses. <em>Output: Lead status changes from 'new' to 'contacted'.</em></div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-num">3</div>
+                    <div class="guide-text"><strong>📅 Meeting Booking</strong> — Monitors outreach responses. When an
+                        HR replies positively, automatically proposes meeting slots and books calls. <em>Output: New
+                            meetings appear in the Meetings tab.</em></div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-num">4</div>
+                    <div class="guide-text"><strong>👤 Candidate Intake</strong> — Collects candidate profiles from
+                        WhatsApp groups, Google Forms, job portal applications, and referrals. Adds them to the central
+                        database with contact info and basic skills. <em>Output: New candidates in the Candidates
+                            tab.</em></div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-num">5</div>
+                    <div class="guide-text"><strong>📄 Resume Parser & Scorer</strong> — AI reads each candidate's
+                        resume, extracts skills, experience, and location. Assigns a 0-100 AI score based on overall
+                        quality. <em>Output: Candidates get AI scores and summaries.</em></div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-num">6</div>
+                    <div class="guide-text"><strong>🎯 AI Matching</strong> — When a client needs specific candidates
+                        (e.g., "BPO Voice Lucknow 15K"), this agent searches the database and ranks the best matches.
+                        Use the search bar to trigger this. <em>Output: Ranked match results.</em></div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-num">7</div>
+                    <div class="guide-text"><strong>🗓️ Interview Scheduler</strong> — Takes top-matched candidates and
+                        schedules interviews. Sends WhatsApp invites to candidates with date, time, and company details.
+                        <em>Output: Candidate status changes to 'interview_scheduled'.</em></div>
+                </div>
+            </div>
+            <div class="guide">
+                <h3>💡 Tips for Best Results</h3>
+                <div class="guide-item">
+                    <div class="guide-num">✨</div>
+                    <div class="guide-text"><strong>Run "All Agents"</strong> once daily for a complete pipeline cycle.
+                        This runs all 7 agents in sequence.</div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-num">✨</div>
+                    <div class="guide-text"><strong>Use AI Match</strong> whenever a client sends a requirement. Type
+                        the role, city, salary in the search bar.</div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-num">✨</div>
+                    <div class="guide-text"><strong>Check Leads tab</strong> to see which companies are hiring. Contact
+                        promising ones that agents haven't reached yet.</div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-num">✨</div>
+                    <div class="guide-text"><strong>The system grows</strong> — every time you run agents, more data
+                        accumulates. The AI matching gets better with more candidates.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            ASR Services Admin Portal • <a href="index.html">User Website</a> • © 2026 AS Recruitment
+        </footer>
+    </div>
+
+    <script>
+        const API = 'https://asr-services-ai-screener.onrender.com';
+        const AGENTS = [
+            { id: 'leads', name: 'Lead Generation', icon: '🔍', desc: 'Discover hiring companies from LinkedIn, Maps, Naukri', cmd: 'leads' },
+            { id: 'outreach', name: 'Email Outreach', icon: '📧', desc: 'Send personalised emails & WhatsApp to HR contacts', cmd: 'outreach' },
+            { id: 'meetings', name: 'Meeting Booking', icon: '📅', desc: 'Convert replies into booked meetings', cmd: 'meetings' },
+            { id: 'candidates', name: 'Candidate Intake', icon: '👤', desc: 'Pull candidates from WhatsApp, forms, portals', cmd: 'candidates' },
+            { id: 'parser', name: 'Resume Parser', icon: '📄', desc: 'AI scoring — extract fields, score 0-100', cmd: 'parser' },
+            { id: 'matching', name: 'AI Matching', icon: '🎯', desc: 'Match candidates to job requirements', cmd: 'matching' },
+            { id: 'scheduler', name: 'Interview Scheduler', icon: '🗓️', desc: 'Schedule interviews via WhatsApp', cmd: 'scheduler' },
+        ];
+
+        function renderAgents() {
+            document.getElementById('agents-grid').innerHTML = AGENTS.map(a => `
+    <div class="ag" id="card-${a.id}">
+      <div class="ag-top"><div class="ag-icon">${a.icon}</div><div class="ag-st" id="st-${a.id}"><div class="dot" style="width:5px;height:5px"></div>READY</div></div>
+      <div class="ag-nm">${a.name}</div>
+      <div class="ag-desc">${a.desc}</div>
+      <button class="ag-btn" id="btn-${a.id}" onclick="runAgent('${a.cmd}')">▶ Run</button>
+    </div>
+  `).join('');
+        }
+
+        function addLog(agent, msg, type = '') {
+            const log = document.getElementById('log-panel');
+            const e = document.createElement('div'); e.className = 'log-e';
+            e.innerHTML = `<div class="log-h"><span class="log-ag">${agent}</span><span class="log-tm">${new Date().toLocaleTimeString()}</span></div><div class="log-msg ${type}">${msg}</div>`;
+            log.insertBefore(e, log.firstChild);
+            while (log.children.length > 50) log.removeChild(log.lastChild);
+        }
+
+        function switchTab(id) {
+            document.querySelectorAll('.tab').forEach((t, i) => { t.classList.toggle('active', ['agents', 'leads', 'candidates', 'meetings', 'guide'][i] === id) });
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tc-' + id).classList.add('active');
+            if (id === 'leads') loadLeads();
+            if (id === 'candidates') loadCandidates();
+            if (id === 'meetings') loadMeetings();
+        }
+
+        async function fetchStats() {
+            const st = document.getElementById('srv-status');
+            try {
+                const r = await fetch(API + '/api/agents/stats');
+                const d = await r.json();
+                const s = d.stats || {};
+                document.getElementById('s-leads').textContent = (s.total_leads || 0).toLocaleString();
+                document.getElementById('s-cand').textContent = (s.total_candidates || 0).toLocaleString();
+                document.getElementById('s-out').textContent = (s.total_outreach || 0).toLocaleString();
+                document.getElementById('s-meet').textContent = (s.total_meetings || 0).toLocaleString();
+                document.getElementById('s-match').textContent = (s.total_matches || 0).toLocaleString();
+                document.getElementById('s-int').textContent = (s.total_interviews || 0).toLocaleString();
+                st.className = 'pill pill-g'; st.innerHTML = '<div class="dot"></div>Live — 7 Agents';
+                addLog('System', 'Connected to backend. All systems operational.', 'log-ok');
+            } catch (e) {
+                st.innerHTML = '<div class="dot"></div>Waking up (~30s)...';
+                addLog('System', 'Backend is cold-starting (free Render tier). Retrying in 15s...', 'log-err');
+                setTimeout(fetchStats, 15000);
+            }
+        }
+
+        async function runAgent(cmd) {
+            const btn = document.getElementById(cmd === 'all' ? 'run-all-btn' : 'btn-' + cmd);
+            const name = cmd === 'all' ? 'All Agents' : (AGENTS.find(a => a.cmd === cmd) || {}).name || cmd;
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Running...'; }
+            addLog(name, 'Agent started...', '');
+            try {
+                const r = await fetch(API + '/api/agents/run/' + cmd, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: document.getElementById('match-q')?.value || 'BPO Lucknow' }) });
+                const d = await r.json();
+                if (d.success) {
+                    addLog(name, '✅ Completed successfully', 'log-ok');
+                    if (d.result) {
+                        const info = JSON.stringify(d.result).replace(/[{}"]/g, '').substring(0, 150);
+                        addLog(name, info, 'log-ok');
+                    }
+                } else { addLog(name, '⚠️ ' + d.error, 'log-err'); }
+            } catch (e) { addLog(name, 'Connection error: ' + e.message, 'log-err'); }
+            finally {
+                if (btn) { btn.disabled = false; btn.textContent = cmd === 'all' ? '🚀 Run All 7 Agents — Full Daily Cycle' : '▶ Run'; }
+                fetchStats();
+            }
+        }
+
+        async function loadLeads() {
+            try {
+                const r = await fetch(API + '/api/data/leads');
+                const d = await r.json();
+                document.getElementById('leads-count').textContent = `(${d.total} total)`;
+                const tb = document.getElementById('leads-table');
+                if (d.leads.length === 0) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No leads yet. Run Lead Agent!</td></tr>'; return; }
+                tb.innerHTML = d.leads.map(l => `<tr>
+      <td style="font-weight:600">${l.company}</td><td>${l.city}</td><td>${l.type}</td>
+      <td>${l.hr_contact}</td><td>${l.role_needed}</td><td>${l.salary_range}</td>
+      <td><span class="badge-s ${l.status === 'contacted' ? 'bg-b' : 'bg-g'}">${l.status}</span></td>
+    </tr>`).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadCandidates() {
+            try {
+                const r = await fetch(API + '/api/data/candidates');
+                const d = await r.json();
+                document.getElementById('cand-count').textContent = `(${d.total} total)`;
+                const tb = document.getElementById('cand-table');
+                if (d.candidates.length === 0) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No candidates yet. Run Candidate Agent!</td></tr>'; return; }
+                tb.innerHTML = d.candidates.map(c => {
+                    const sc = c.score || 0; const cls = sc >= 70 ? 'bg-g' : sc >= 50 ? 'bg-a' : 'bg-r';
+                    return `<tr><td style="font-weight:600">${c.name}</td><td>${c.primary_skill}</td><td>${c.city}</td>
+      <td>${c.experience_years}yr</td><td><span class="badge-s ${cls}">${sc}</span></td>
+      <td>${c.source}</td><td><span class="badge-s ${c.status === 'interview_scheduled' ? 'bg-b' : 'bg-g'}">${c.status}</span></td></tr>`;
+                }).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadMeetings() {
+            try {
+                const r = await fetch(API + '/api/data/meetings');
+                const d = await r.json();
+                document.getElementById('meet-count').textContent = `(${d.total} total)`;
+                const tb = document.getElementById('meet-table');
+                if (d.meetings.length === 0) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted)">No meetings yet. Run agents to book meetings!</td></tr>'; return; }
+                tb.innerHTML = d.meetings.map(m => `<tr>
+      <td style="font-weight:600">${m.company}</td><td>${m.hr}</td>
+      <td>${new Date(m.date).toLocaleDateString()}</td><td>${m.type}</td>
+      <td><span class="badge-s bg-b">${m.status}</span></td>
+    </tr>`).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function doMatch() {
+            const q = document.getElementById('match-q').value; if (!q) return;
+            const btn = document.getElementById('match-btn');
+            const res = document.getElementById('match-results');
+            btn.disabled = true; btn.textContent = '⏳...';
+            res.innerHTML = '<p style="color:var(--cyan);text-align:center;padding:12px">Scanning database...</p>';
+            addLog('AI Matching', 'Searching: "' + q + '"', '');
+            try {
+                const r = await fetch(API + '/api/agents/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: q }) });
+                const d = await r.json();
+                const m = d.matches || [];
+                if (m.length > 0) {
+                    res.innerHTML = `<table class="tbl"><thead><tr><th>Name</th><th>Skill</th><th>City</th><th>Exp</th><th>Score</th><th>Source</th></tr></thead><tbody>${m.map(c => {
+                        const sc = c.match_score || c.score || 0; const cls = sc >= 70 ? 'bg-g' : sc >= 50 ? 'bg-a' : 'bg-r';
+                        return `<tr><td style="font-weight:600">${c.name}</td><td>${c.primary_skill}</td><td>${c.city}</td><td>${c.experience_years}yr</td><td><span class="badge-s ${cls}">${sc}%</span></td><td>${c.source}</td></tr>`;
+                    }).join('')}</tbody></table>`;
+                    addLog('AI Matching', m.length + ' matches found', 'log-ok');
+                } else { res.innerHTML = '<p style="color:var(--muted);text-align:center;padding:12px">No matches. Run Candidate Agent to grow the database.</p>'; addLog('AI Matching', 'No matches', ''); }
+            } catch (e) { res.innerHTML = '<p style="color:var(--red);text-align:center;padding:12px">Backend waking up... try again in 30s</p>'; addLog('AI Matching', 'Connection error', 'log-err'); }
+            finally { btn.disabled = false; btn.textContent = '🎯 Match'; }
+        }
+
+        renderAgents(); fetchStats();
+    </script>
+</body>
+
+</html>

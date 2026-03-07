@@ -151,7 +151,7 @@
     <script src="js/utils.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            if (!await Utils.requireLogin()) return;
+            // Don't redirect if not logged in — just render normally
             await Utils.renderNavbar('navbar-container');
 
             const txnInput = document.getElementById('txnIdInput');
@@ -228,7 +228,7 @@
             }
         });
 
-        const UPI_ID = 'krishnabajpai62@okaxis';
+        const UPI_ID = 'srijanbajpai24@ybl';
         const MERCHANT_NAME = 'ASR Services';
 
         async function openPayment(amount, name, credits) {

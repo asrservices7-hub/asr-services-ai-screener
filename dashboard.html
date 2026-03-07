@@ -208,12 +208,8 @@
     <script src="js/screener.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            if (!await Utils.requirePayment()) return;
+            if (!await Utils.requireLogin()) return;
             await Utils.renderNavbar('navbar-container');
-
-            if (await Utils.hasUsedBatch()) {
-                // No-op in testing mode
-            }
 
             const elements = {
                 jdInput: document.getElementById('jdInput'),
