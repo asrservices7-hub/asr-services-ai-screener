@@ -34,6 +34,7 @@
       <div class="navbar-right">
         <a href="#features" class="navbar-link">Features</a>
         <a href="#pricing-preview" class="navbar-link">Pricing</a>
+        <a href="agents.html" class="navbar-link">🤖 Agents</a>
         <a href="#login" class="btn btn-primary btn-sm" style="padding: 8px 20px;">Get Started</a>
       </div>
     </nav>
@@ -316,7 +317,10 @@
     </main>
 
     <footer class="legal-footer animate-fadeIn">
-      <p>Powered by ASR Services AI Screener • <a href="#" id="copyLink">asrservices24</a></p>
+      <p>Powered by ASR Services AI Screener • <a href="agents.html">🤖 Agent Dashboard</a> • <a href="#"
+          id="copyLink">asrservices24</a></p>
+      <p style="margin-top: 8px;"><a href="#" id="openTerms">Service Terms</a> · <a href="#"
+          id="openPrivacy">Privacy</a></p>
       <p style="margin-top: 8px;">© 2026 ASR Services. All rights reserved.</p>
     </footer>
   </div>
@@ -428,7 +432,10 @@
         overlay.classList.add('active');
       };
 
-      document.getElementById('openPrivacy').addEventListener('click', (e) => { e.preventDefault(); showModal('privacy'); });
+      const openPrivacy = document.getElementById('openPrivacy');
+      const openTerms = document.getElementById('openTerms');
+      if (openPrivacy) openPrivacy.addEventListener('click', (e) => { e.preventDefault(); showModal('privacy'); });
+      if (openTerms) openTerms.addEventListener('click', (e) => { e.preventDefault(); showModal('terms'); });
       closeModal.addEventListener('click', () => overlay.classList.remove('active'));
       overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
     });

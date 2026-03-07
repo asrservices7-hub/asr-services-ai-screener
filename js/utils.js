@@ -1,10 +1,14 @@
 /* ==============================
    Utils — Supabase Integration, Session, CSV Export
+   ASR Services v2.0
    ============================== */
 
 // Supabase Configuration
 const SUPABASE_URL = 'https://voqpifhgvizudlggsuzj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcXBpZmhndml6dWRsZ2dzdXpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODIzNzYsImV4cCI6MjA4NzM1ODM3Nn0.B88w3JCAv75qIky638UwPh6TVyKfYbAxHyCB2zdSe2o';
+const API_BASE = 'https://asr-services-ai-screener.onrender.com';
+const ADMIN_EMAIL = 'asrservices7@gmail.com';
+
 let supabaseClient = null;
 
 // Initialize Supabase client if SDK is present
@@ -12,7 +16,9 @@ if (window.supabase && window.supabase.createClient) {
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
-
+function isAdmin(email) {
+  return email && email.toLowerCase().trim() === ADMIN_EMAIL;
+}
 
 const Utils = {
   /* ---------- Rate Limiter ---------- */
@@ -36,19 +42,36 @@ const Utils = {
     return true;
   },
 
-  /* ---------- Session Helpers (TESTING MODE: All checks bypassed) ---------- */
+  /* ---------- Session Helpers ---------- */
   async getSession() {
-    // TESTING MODE: Return a mock session so everything works without Supabase auth
     try {
+      if (!supabaseClient) return null;
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
+        const email = session.user.email;
+        // Fetch profile
         const { data: profile } = await supabaseClient
-          .from('profiles').select('*').eq('email', session.user.email).single();
-        return { ...session.user, ...profile, is_paid: true, credits: 999999 };
+          .from('profiles').select('*').eq('email', email).single();
+
+        const userObj = {
+          ...session.user,
+          email: email,
+          is_paid: profile?.is_paid || false,
+          credits: profile?.credits || 0
+        };
+
+        // Admin always unlimited
+        if (isAdmin(email)) {
+          userObj.is_paid = true;
+          userObj.credits = 999999;
+        }
+
+        return userObj;
       }
-    } catch (e) { /* ignore auth errors in testing mode */ }
-    // Fallback: return mock session for testing
-    return { email: 'tester@asrservices.com', id: '00000000-0000-0000-0000-000000000000', is_paid: true, credits: 999999 };
+    } catch (e) {
+      console.error('Session error:', e);
+    }
+    return null;
   },
 
   async setSession(data) {
@@ -61,10 +84,41 @@ const Utils = {
     sessionStorage.removeItem('rs_session');
   },
 
-  async isLoggedIn() { return true; },
-  async isPaid() { return true; },
-  async hasUsedBatch() { return false; },
-  async markBatchUsed() { /* No-op in testing mode */ },
+  async isLoggedIn() {
+    const session = await this.getSession();
+    return !!session;
+  },
+
+  async isPaid() {
+    const session = await this.getSession();
+    if (!session) return false;
+    if (isAdmin(session.email)) return true;
+    return session.is_paid === true;
+  },
+
+  async getCredits() {
+    const session = await this.getSession();
+    if (!session) return 0;
+    if (isAdmin(session.email)) return 999999;
+    return session.credits || 0;
+  },
+
+  async hasCredits() {
+    const credits = await this.getCredits();
+    return credits > 0;
+  },
+
+  async useCredit() {
+    const session = await this.getSession();
+    if (!session) return false;
+    if (isAdmin(session.email)) return true; // Never deduct from admin
+
+    const newCredits = Math.max(0, (session.credits || 0) - 1);
+    await supabaseClient.from('profiles')
+      .update({ credits: newCredits })
+      .eq('email', session.email);
+    return true;
+  },
 
   /* ---------- Auth & Payment Logic ---------- */
   validateEmail(email) {
@@ -106,8 +160,20 @@ const Utils = {
       return { error: authErr };
     }
 
-    // Ensure local profile sync
-    await supabaseClient.from('profiles').upsert({ email }, { onConflict: 'email' }).catch(() => { });
+    // Ensure profile exists
+    const cleanEmail = email.toLowerCase().trim();
+    await supabaseClient.from('profiles').upsert({
+      email: cleanEmail,
+      is_paid: isAdmin(cleanEmail),
+      credits: isAdmin(cleanEmail) ? 999999 : 0
+    }, { onConflict: 'email' }).catch(() => { });
+
+    // If admin, ensure unlimited
+    if (isAdmin(cleanEmail)) {
+      await supabaseClient.from('profiles')
+        .update({ is_paid: true, credits: 999999 })
+        .eq('email', cleanEmail).catch(() => { });
+    }
 
     return { error: null };
   },
@@ -127,8 +193,13 @@ const Utils = {
       return { error: signUpErr };
     }
 
-    // Attempt to auto-create profile
-    await supabaseClient.from('profiles').insert({ email, is_paid: false, credits: 0 }).catch(() => { });
+    // Create profile
+    const cleanEmail = email.toLowerCase().trim();
+    await supabaseClient.from('profiles').insert({
+      email: cleanEmail,
+      is_paid: isAdmin(cleanEmail),
+      credits: isAdmin(cleanEmail) ? 999999 : 0
+    }).catch(() => { });
 
     if (!signUpData.session) {
       return { error: null, verificationRequired: true };
@@ -141,9 +212,10 @@ const Utils = {
     const session = await this.getSession();
     if (!session) return false;
 
+    const newCredits = isAdmin(session.email) ? 999999 : credits;
     const { error } = await supabaseClient
       .from('profiles')
-      .update({ is_paid: true, credits: credits })
+      .update({ is_paid: true, credits: newCredits })
       .eq('email', session.email);
 
     return !error;
@@ -166,7 +238,7 @@ const Utils = {
 
       if (error) {
         console.error('Create order error:', error);
-        return null; // Return null if table doesn't exist yet
+        return null;
       }
       return data;
     } catch (err) {
@@ -196,21 +268,22 @@ const Utils = {
         currentOrder = data;
       }
 
-      // 3. Just activate the profile directly (Serverless approach)
+      // 3. Activate the profile
       const creditsToAdd = currentOrder ? currentOrder.credits : window._currentCredits;
       const amountPaid = currentOrder ? currentOrder.amount : window._currentAmount;
       const planName = currentOrder ? currentOrder.plan_name : 'Unknown Plan';
+      const cleanEmail = email.toLowerCase().trim();
 
       const session = await this.getSession();
       if (!session) return { success: false, error: 'Not logged in' };
 
       const currentCredits = session.credits || 0;
-      const newCredits = currentCredits + creditsToAdd;
+      const newCredits = isAdmin(cleanEmail) ? 999999 : currentCredits + creditsToAdd;
 
       const { error: profileErr } = await supabaseClient
         .from('profiles')
         .update({ is_paid: true, credits: newCredits })
-        .eq('email', email.toLowerCase().trim());
+        .eq('email', cleanEmail);
 
       if (profileErr) return { success: false, error: 'Failed to update profile.' };
 
@@ -223,7 +296,7 @@ const Utils = {
 
         await supabaseClient.from('payments').insert({
           order_id: orderId,
-          user_email: email.toLowerCase().trim(),
+          user_email: cleanEmail,
           amount: amountPaid,
           utr,
           status: 'verified',
@@ -235,7 +308,6 @@ const Utils = {
       return { success: true, message: 'Payment verified! Your credits have been activated.', credits: newCredits };
     } catch (err) {
       console.error('Verify payment error:', err);
-      // Fallback if tables don't exist yet but user paid
       const success = await this.activatePayment(window._currentAmount, window._currentCredits);
       if (success) {
         return { success: true, message: 'Payment activated (Fallback mode)!' };
@@ -271,10 +343,29 @@ const Utils = {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   },
 
-  /* ---------- Guards (TESTING MODE: All bypassed) ---------- */
-  async requireLogin() { return true; },
-  async requirePayment() { return true; },
+  /* ---------- Guards ---------- */
+  async requireLogin() {
+    const loggedIn = await this.isLoggedIn();
+    if (!loggedIn) {
+      window.location.href = 'index.html';
+      return false;
+    }
+    return true;
+  },
 
+  async requirePayment() {
+    const session = await this.getSession();
+    if (!session) {
+      window.location.href = 'index.html';
+      return false;
+    }
+    if (isAdmin(session.email)) return true;
+    if (!session.is_paid) {
+      window.location.href = 'payment.html';
+      return false;
+    }
+    return true;
+  },
 
   /* ---------- Database Screenings ---------- */
   async saveScreening(config, results) {
@@ -312,7 +403,6 @@ const Utils = {
   },
 
   /* ---------- Common UI Components ---------- */
-
   async renderNavbar(id) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -321,14 +411,16 @@ const Utils = {
       <nav class="navbar animate-fadeInUp">
         <div class="navbar-brand" onclick="window.location.href='index.html'" style="cursor:pointer">
           <div class="navbar-brand-icon">📄</div>
-          <span>ASR Services AI Screener</span>
+          <span>ASR Services</span>
         </div>
         <div class="navbar-right">
           ${session && session.email ? `
+            <a href="agents.html" class="navbar-link">🤖 Agents</a>
             <span class="navbar-email" style="font-size: 0.85rem; color: var(--text-muted); margin-right: 12px;">${session.email}</span>
             <a href="#" class="navbar-link" onclick="Utils.clearSession().then(() => window.location.href='index.html');">Logout</a>
           ` : `
             <a href="index.html#features" class="navbar-link">Features</a>
+            <a href="agents.html" class="navbar-link">🤖 Agents</a>
             <a href="index.html#login" class="btn btn-primary btn-sm" style="padding: 8px 20px;">Get Started</a>
           `}
         </div>

@@ -9,8 +9,7 @@ __pycache__/
 backend/.env
 
 # Databases (will be recreated on deploy)
-*.db
-
+# *.db
 # OS files
 .DS_Store
 Thumbs.db
@@ -25,3 +24,4 @@ test-*.js
 
 # Temp
 cloudflared
+frontend_deploy.zip
