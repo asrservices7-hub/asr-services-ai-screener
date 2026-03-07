@@ -11,4 +11,4 @@ services:
       - key: SUPABASE_SERVICE_KEY
         sync: false
       - key: CORS_ORIGIN
-        value: https://asrservices24-ai.netlify.app,https://asrservices24.netlify.app
+        value: https://asrservices24-ai.netlify.app,https://asrservices24.netlify.app,https://asrcommandcenter24.netlify.app

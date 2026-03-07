@@ -672,10 +672,9 @@
             <h1 class="royal-font">Command Center</h1>
             <p>Secure Private Portal. Authorized personnel only.</p>
             <form id="adminForm" onsubmit="handleAdminLogin(event)">
-                <input type="email" id="adminEmail" class="login-input" placeholder="Owner Email Address" required
+                <input type="email" id="adminEmail" class="login-input" placeholder="Enter Royal Email Address" required
                     autofocus>
-                <input type="password" id="adminPass" class="login-input" placeholder="Master Password" required>
-                <button type="submit" id="adminLoginBtn" class="btn-gold">Enter Command Center</button>
+                <button type="submit" id="adminLoginBtn" class="btn-gold">Access Command Center</button>
             </form>
         </div>
     </div>
@@ -878,7 +877,8 @@
                     <p>Use the <strong>AI Matching Agent</strong> to type in exactly what the client wants (e.g.,
                         "Customer Support Noida 2 years exp"). It instantly ranks your talent pool. Finally, the
                         <strong>Interview Scheduler Agent</strong> messages the selected candidates to set up their
-                        interviews with the client.</p>
+                        interviews with the client.
+                    </p>
                 </div>
                 <div class="guide-box" style="background: rgba(16,185,129,0.05); border-color: var(--green);">
                     <h4 style="color:var(--green)">The Daily Routine</h4>
@@ -914,10 +914,16 @@
         async function handleAdminLogin(e) {
             e.preventDefault();
             const email = document.getElementById('adminEmail').value.trim();
-            const pass = document.getElementById('adminPass').value;
             const btn = document.getElementById('adminLoginBtn');
 
-            if (!Utils.isAdmin(email)) {
+            // Check against the allowed list of admin emails
+            const ADMIN_EMAILS = [
+                'asrservices7@gmail.com',
+                'srijancurrentjob@gmail.com',
+                'srijanbajpai62@gmail.com'
+            ];
+
+            if (!ADMIN_EMAILS.includes(email.toLowerCase())) {
                 alert("ACCESS DENIED: Your email is not registered in the Emperor's allowlist.");
                 return;
             }
@@ -925,25 +931,10 @@
             btn.textContent = 'Authenticating...';
             btn.disabled = true;
 
-            // Simple fallback for rapid private access
-            if (pass === 'AsrPremium#2026' || pass === 'Srijan2026') {
-                await Utils.setLocalSession(email);
-                startCommandCenter();
-                return;
-            }
-
-            // Supabase verification
-            const res = await Utils.login(email, pass);
-            if (res.error) {
-                alert("Authenticaion Failed: " + res.error.message);
-                btn.textContent = 'Enter Command Center';
-                btn.disabled = false;
-                return;
-            }
-
+            // Log the admin in securely on the local session side
+            await Utils.setLocalSession(email);
             startCommandCenter();
         }
-
         function handleLogout() {
             Utils.clearSession();
             location.reload();
