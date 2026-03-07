@@ -22,12 +22,10 @@ if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
 // --- Middleware ---
 app.use(express.json());
 app.use(cors({
-  origin: [
-    process.env.CORS_ORIGIN || 'https://asrservices24.netlify.app',
-    'http://localhost:5500',
-    'http://127.0.0.1:5500',
-    'http://localhost:3000'
-  ],
+  origin: function (origin, callback) {
+    // Allow all origins, including null (from file:// execution)
+    callback(null, true);
+  },
   credentials: true
 }));
 
