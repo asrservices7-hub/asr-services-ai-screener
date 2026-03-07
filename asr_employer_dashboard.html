@@ -50,6 +50,7 @@
             font-size: 2rem;
             font-weight: 700;
             background: linear-gradient(135deg, var(--accent-color), var(--secondary-accent));
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -170,6 +171,48 @@
 
 <body>
     <div class="vibrant-glow"></div>
+    <div class="container">
+        <header>
+            <div class="logo">ASR Platform</div>
+            <button class="btn">Find Matches</button>
+        </header>
+
+        <div class="grid-layout">
+            <!-- Top Stats -->
+            <div class="card one-third">
+                <div class="card-title">Total Leads</div>
+                <div class="stat-value" id="total-leads">...</div>
+                <div class="stat-label">Discovered Companies</div>
+            </div>
+
+            <div class="card one-third">
+                <div class="card-title">Candidate Pool</div>
+                <div class="stat-value" id="cand-score">...</div>
+                <div class="stat-label">Avg Quality Match</div>
+            </div>
+
+            <div class="card one-third">
+                <div class="card-title">Total Revenue</div>
+                <div class="stat-value" id="revenue">...</div>
+                <div class="stat-label">Invoiced & Tracked</div>
+            </div>
+
+            <!-- Activity & Table -->
+            <div class="card full-width">
+                <div class="card-title">Live Discovery Activity</div>
+                <div id="recent-activity" style="color: var(--text-secondary); max-height: 150px; overflow-y: auto;">
+                    Loading live network stats...
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <div class="card-title">Matched Candidates</div>
+                <div class="candidate-list" id="candidate-list">
+                    <div style="color: var(--text-secondary);">Click "Find Matches" above to trigger the live AI
+                        matching engine.</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
