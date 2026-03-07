@@ -325,6 +325,83 @@ app.post('/api/orders/verify', async (req, res) => {
   } catch (err) { res.json({ success: true, message: 'Payment recorded. Credits will be activated shortly.' }); }
 });
 
+// ==========================================
+// REVENUE AGENT (End-to-End Payment Engine)
+// ==========================================
+
+// 1. Get all transactions & latest stats
+app.get('/api/revenue/transactions', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Supabase DB not connected' });
+  try {
+    const { data, error } = await supabase.from('asr_transactions').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/revenue/stats', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Supabase DB not connected' });
+  try {
+    const { data, error } = await supabase.from('asr_transactions').select('*');
+    if (error) throw error;
+
+    let totalRevenue = 0, pending = 0, placements = 0, invoices = 0, paidInvoices = 0;
+    let saasRev = 0;
+
+    data.forEach(t => {
+      const amt = Number(t.amount) || 0;
+      if (t.status === 'paid') totalRevenue += amt;
+      if (t.status === 'pending' || t.status === 'overdue' || t.status === 'partial') pending += amt;
+      if (t.type === 'placement' && t.status === 'paid') placements++;
+      if (t.invoice_num) invoices++;
+      if (t.invoice_num && t.status === 'paid') paidInvoices++;
+      if (t.type === 'saas' && t.status === 'paid') saasRev += amt;
+    });
+
+    res.json({
+      earned: totalRevenue,
+      pending: pending,
+      placements: placements,
+      invoices: invoices,
+      paid_invoices: paidInvoices,
+      saas_revenue: saasRev,
+      active_clients: [...new Set(data.map(t => t.client_name))].length
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 2. Add new transaction
+app.post('/api/revenue/add', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Supabase DB not connected' });
+  try {
+    const payload = req.body;
+    // payload format maps directly to asr_transactions schema
+    const { error } = await supabase.from('asr_transactions').insert([payload]);
+    if (error) throw error;
+    res.json({ success: true, message: 'Transaction recorded successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3. Update transaction status
+app.put('/api/revenue/update/:id', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Supabase DB not connected' });
+  try {
+    const { id } = req.params;
+    const { status, paid_at } = req.body;
+    const { error } = await supabase.from('asr_transactions').update({ status, paid_at }).eq('id', id);
+    if (error) throw error;
+    res.json({ success: true, message: 'Transaction status updated' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 ASR Services LIVE PRODUCTION Engine running on port ${PORT}`);
 });
