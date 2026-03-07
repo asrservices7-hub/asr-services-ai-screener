@@ -17,8 +17,6 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 
-const ADMIN_EMAILS = ['asrservices7@gmail.com', 'srijancurrentjob@gmail.com', 'srijanbajpai62@gmail.com'];
-
 // --- Supabase Client ---
 let supabase = null;
 try {
@@ -61,7 +59,7 @@ async function runLeadAgent(state) {
     const response = await axios.get('https://remotive.com/api/remote-jobs?category=customer_support&limit=5');
     const jobs = response.data.jobs || [];
     let discovered = 0;
-
+    
     for (const job of jobs) {
       if (!state.leads.find(l => l.company === job.company_name)) {
         const lead = {
@@ -72,16 +70,13 @@ async function runLeadAgent(state) {
         state.leads.unshift(lead);
         discovered++;
         // Push to real DB if exists
-        if (supabase) {
-          const { error } = await supabase.from('asr_leads').insert([lead]);
-          if (error) console.error('Supabase DB mismatch/missing lead table:', error.message);
-        }
+        if (supabase) await supabase.from('asr_leads').insert([lead]).catch(()=>null);
       }
     }
     state.stats.total_leads += discovered;
     addLog(state, 'Lead Generation', `Scraped ${discovered} real company leads via Remotive Open API`, 'success');
     return { count: discovered, source: 'Remotive API' };
-  } catch (e) {
+  } catch(e) {
     console.error(e);
     addLog(state, 'Lead Generation', `API Error fallback used`, 'error');
     return { count: 0 };
@@ -103,10 +98,7 @@ async function runOutreachAgent(state) {
     sent++;
     const logEntry = { lead_id: lead.id, company: lead.company, method: 'Email', status: mailerOpts ? 'SMTP Sent' : 'Queued (No SMTP)' };
     state.outreach.push(logEntry);
-    if (supabase) {
-      const { error } = await supabase.from('asr_outreach').insert([logEntry]);
-      if (error) console.error('Supabase DB missing outreach table:', error.message);
-    }
+    if (supabase) await supabase.from('asr_outreach').insert([logEntry]).catch(()=>null);
 
     // Physically send email
     if (mailerOpts) {
@@ -118,7 +110,7 @@ async function runOutreachAgent(state) {
           subject: `ASR Outreach: Placement for ${lead.company}`,
           text: `Transparency Test: ASR Agent just generated an outreach draft for ${lead.company} regarding the ${lead.role_needed} role.\n\nLead Source: ${lead.job_url}`
         });
-      } catch (e) { console.error('Email error:', e); }
+      } catch(e) { console.error('Email error:', e); }
     }
   }
   state.stats.total_outreach += sent;
@@ -137,19 +129,16 @@ async function runCandidateAgent(state) {
       const c = {
         id: `C${Date.now()}-${count}`, name: `${u.name.first} ${u.name.last}`, city: u.location.city,
         primary_skill: skills[Math.floor(Math.random() * skills.length)],
-        experience_years: Math.floor(Math.random() * 5) + 1, score: 0, source: 'API Scrape', phone: u.phone, status: 'active', ai_scored: false
+        experience_years: Math.floor(Math.random() * 5) + 1, score: 0, source: 'API Scrape', phone: u.phone, status: 'active'
       };
       state.candidates.unshift(c);
-      if (supabase) {
-        const { error } = await supabase.from('asr_candidates').insert([c]);
-        if (error) console.error('Supabase error inserting candidate:', error.message);
-      }
+      if (supabase) await supabase.from('asr_candidates').insert([c]).catch(()=>null);
       count++;
     }
     state.stats.total_candidates += count;
     addLog(state, 'Candidate Intake', `Pulled ${count} candidates from open data sources`, 'success');
     return { count };
-  } catch (e) { return { count: 0 }; }
+  } catch(e) { return { count: 0 }; }
 }
 
 // 4. RESUME PARSER & SCORER: Local offline text processing algorithms
@@ -163,22 +152,14 @@ function runParserAgent(state) {
       scored++;
     }
   });
-  if (scored > 0) addLog(state, 'Resume Parser', `Analyzed & Scored ${scored} profiles via local engine.`, 'success');
-  else addLog(state, 'Resume Parser', `No new profiles to score.`, 'info');
+  addLog(state, 'Resume Parser', `Analyzed & Scored ${scored} profiles via local engine.`, 'success');
   return { scored };
 }
 
 function runMatchingAgent(state, query) {
-  const q = (query || 'BPO').toLowerCase();
-  const matches = state.candidates.filter(c => {
-    const text = `${c.name} ${c.city} ${c.primary_skill}`.toLowerCase();
-    return q.split(/\s+/).some(word => text.includes(word));
-  }).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 10);
-
-  matches.forEach(m => { m.match_score = Math.min(100, (m.score || 50) + Math.floor(Math.random() * 15)); });
-  state.stats.total_matches += matches.length;
+  const matches = state.candidates.filter(c => (c.score || 0) > 70).slice(0, 5);
   addLog(state, 'AI Matching', `Found ${matches.length} high-fidelity matches for "${query}"`, 'success');
-  return { matches, query: query || 'BPO' };
+  return { matches, query };
 }
 
 function runSchedulerAgent(state) {
@@ -191,14 +172,13 @@ function runMeetingAgent(state) {
   return { booked: 0 };
 }
 
-async function runAllAgents(state) {
-  await runLeadAgent(state);
-  await runOutreachAgent(state);
-  await runCandidateAgent(state);
+function runAllAgents(state) {
+  runLeadAgent(state);
+  runOutreachAgent(state);
+  runCandidateAgent(state);
   runParserAgent(state);
   state.last_run = new Date().toISOString();
   saveState(state);
-  addLog(state, 'System', '✅ Full daily cycle completed — all agents executed live processes', 'success');
   return { success: true };
 }
 
@@ -206,66 +186,27 @@ async function runAllAgents(state) {
 //  API ROUTES / REAL ENDPOINTS
 // ══════════════════════════════════════════════════════════════
 
-app.get('/', (req, res) => {
-  res.json({ service: 'ASR LIVE PRODUCTION Engine', status: 'live', version: '4.0.0', agents: 7 });
-});
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'ASR LIVE PRODUCTION API', timestamp: new Date().toISOString() });
-});
-
-app.get('/api/agents/stats', (req, res) => {
-  const state = loadState();
-  res.json({
-    stats: state.stats, last_run: state.last_run,
-    recent_leads: state.leads.slice(0, 5), recent_candidates: state.candidates.slice(0, 5),
-    agents: [
-      { id: 1, name: 'Lead Generation', icon: '🔍', status: 'ready', description: 'Scrapes live remote jobs using Remotive API' },
-      { id: 2, name: 'Email Outreach', icon: '📧', status: 'ready', description: 'Physically sends SMTP emails using Nodemailer' },
-      { id: 3, name: 'Meeting Booking', icon: '📅', status: 'ready', description: 'Syncs with calendars' },
-      { id: 4, name: 'Candidate Intake', icon: '👤', status: 'ready', description: 'Pulls real user data into profiles' },
-      { id: 5, name: 'Resume Parser', icon: '📄', status: 'ready', description: 'Reads PDFs & Scores matching keywords' },
-      { id: 6, name: 'AI Matching', icon: '🎯', status: 'ready', description: 'Finds strong candidates for jobs' },
-      { id: 7, name: 'Interview Scheduler', icon: '🗓️', status: 'ready', description: 'Sends interview invites' },
-    ]
-  });
-});
-
-app.get('/api/agents/status', (req, res) => res.json(loadState()));
-app.get('/api/data/leads', (req, res) => { const state = loadState(); res.json({ leads: state.leads, total: state.leads.length }); });
-app.get('/api/data/candidates', (req, res) => { const state = loadState(); res.json({ candidates: state.candidates, total: state.candidates.length }); });
-app.get('/api/data/meetings', (req, res) => { const state = loadState(); res.json({ meetings: state.meetings, total: state.meetings.length }); });
-app.get('/api/data/activity', (req, res) => { const state = loadState(); res.json({ activity: state.activity_log.slice(0, 50) }); });
-
-app.post('/api/agents/match', (req, res) => {
-  const { query } = req.body;
-  if (!query) return res.status(400).json({ error: 'Missing query' });
-  const state = loadState();
-  const result = runMatchingAgent(state, query);
-  saveState(state);
-  res.json(result);
-});
-
 // Resume File Upload (REAL THING)
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-const upload = multer({ dest: uploadDir });
+const upload = multer({ dest: 'uploads/' });
 app.post('/api/upload-resume', upload.single('resume'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   try {
     const dataBuffer = fs.readFileSync(req.file.path);
     const data = await pdfParse(dataBuffer);
+    
+    // basic keyword matching
     const txt = data.text.toLowerCase();
     let score = 50;
     if (txt.includes('sales')) score += 10;
     if (txt.includes('bpo')) score += 15;
     if (txt.includes('support')) score += 10;
-    fs.unlinkSync(req.file.path);
-    const state = loadState();
-    addLog(state, 'Resume Parser', `Physically parsed uploaded file. Score: ${score}/100`, 'success');
-    saveState(state);
-    return res.json({ success: true, score });
-  } catch (err) { return res.status(500).json({ error: 'Failed to parse PDF' }); }
+    
+    fs.unlinkSync(req.file.path); // clean up
+
+    return res.json({ success: true, textExtracted: data.text.substring(0, 100), score });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to parse PDF' });
+  }
 });
 
 // Standard Agent Command Interface
@@ -273,7 +214,7 @@ app.post('/api/agents/run/:agent', async (req, res) => {
   const state = loadState();
   const agentName = req.params.agent;
   let result = {};
-
+  
   try {
     switch (agentName) {
       case 'leads': result = await runLeadAgent(state); break;
@@ -286,44 +227,12 @@ app.post('/api/agents/run/:agent', async (req, res) => {
       case 'all': result = await runAllAgents(state); break;
     }
     saveState(state);
-    res.json({ success: true, agent: agentName, result, stats: state.stats, timestamp: new Date().toISOString() });
-  } catch (err) { res.json({ success: false, error: err.message, timestamp: new Date().toISOString() }); }
+    res.json({ success: true, agent: agentName, result, stats: state.stats });
+  } catch (err) { res.json({ success: false, error: err.message }); }
 });
 
-function isAdmin(email) { return email && ADMIN_EMAILS.includes(email.toLowerCase().trim()); }
-
-app.post('/api/profile', async (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ error: 'Email required' });
-  const cleanEmail = email.toLowerCase().trim();
-  if (!supabase) return res.json({ profile: { email: cleanEmail, is_paid: isAdmin(cleanEmail), credits: isAdmin(cleanEmail) ? 999999 : 1 } });
-  try {
-    const { data: existing } = await supabase.from('profiles').select('*').eq('email', cleanEmail).single();
-    if (existing) {
-      if (isAdmin(cleanEmail) && (!existing.is_paid || existing.credits < 999999)) {
-        await supabase.from('profiles').update({ is_paid: true, credits: 999999 }).eq('email', cleanEmail);
-        existing.is_paid = true;
-        existing.credits = 999999;
-      }
-      return res.json({ profile: existing });
-    }
-    const { data } = await supabase.from('profiles').insert({ email: cleanEmail, is_paid: isAdmin(cleanEmail), credits: isAdmin(cleanEmail) ? 999999 : 1 }).select().single();
-    res.json({ profile: data || { email: cleanEmail, is_paid: isAdmin(cleanEmail), credits: isAdmin(cleanEmail) ? 999999 : 1 } });
-  } catch (err) { res.json({ profile: { email: cleanEmail, is_paid: isAdmin(cleanEmail), credits: isAdmin(cleanEmail) ? 999999 : 1 } }); }
-});
-
-app.post('/api/orders/verify', async (req, res) => {
-  const { order_id, utr, email } = req.body;
-  const cleanEmail = email ? email.toLowerCase().trim() : '';
-  if (!supabase) return res.json({ success: true, message: 'Payment verified!', credits: isAdmin(cleanEmail) ? 999999 : 10 });
-  try {
-    if (order_id) await supabase.from('orders').update({ utr, status: 'paid', verified_at: new Date().toISOString() }).eq('id', order_id);
-    const { data: profile } = await supabase.from('profiles').select('credits').eq('email', cleanEmail).single();
-    const newCredits = isAdmin(cleanEmail) ? 999999 : (profile?.credits || 0) + 10;
-    await supabase.from('profiles').update({ is_paid: true, credits: newCredits }).eq('email', cleanEmail);
-    res.json({ success: true, message: 'Payment verified! Credits activated.', credits: newCredits });
-  } catch (err) { res.json({ success: true, message: 'Payment recorded. Credits will be activated shortly.' }); }
-});
+app.get('/api/agents/stats', (req, res) => res.json(loadState()));
+app.get('/api/agents/status', (req, res) => res.json(loadState()));
 
 app.listen(PORT, () => {
   console.log(`🚀 ASR Services LIVE PRODUCTION Engine running on port ${PORT}`);
