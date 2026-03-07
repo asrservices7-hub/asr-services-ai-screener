@@ -6,7 +6,11 @@
 const SUPABASE_URL = 'https://voqpifhgvizudlggsuzj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcXBpZmhndml6dWRsZ2dzdXpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3ODIzNzYsImV4cCI6MjA4NzM1ODM3Nn0.B88w3JCAv75qIky638UwPh6TVyKfYbAxHyCB2zdSe2o';
 const API_BASE = 'https://asr-services-ai-screener.onrender.com';
-const ADMIN_EMAIL = 'asrservices7@gmail.com';
+const ADMIN_EMAILS = [
+  'asrservices7@gmail.com',
+  'srijancurrentjob@gmail.com',
+  'srijanbajpai62@gmail.com'
+];
 const UPI_ID = 'srijanbajpai24@ybl';
 
 let supabaseClient = null;
@@ -17,7 +21,7 @@ try {
 } catch (e) { console.warn('Supabase SDK not loaded'); }
 
 function isAdmin(email) {
-  return email && email.toLowerCase().trim() === ADMIN_EMAIL;
+  return email && ADMIN_EMAILS.includes(email.toLowerCase().trim());
 }
 
 const Utils = {

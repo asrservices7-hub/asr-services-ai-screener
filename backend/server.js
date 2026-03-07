@@ -14,8 +14,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 
-// --- Admin Email (unlimited credits) ---
-const ADMIN_EMAIL = 'asrservices7@gmail.com';
+// --- Admin Emails (unlimited credits & private portal access) ---
+const ADMIN_EMAILS = [
+  'asrservices7@gmail.com',
+  'srijancurrentjob@gmail.com',
+  'srijanbajpai62@gmail.com'
+];
 
 // --- Supabase Client (optional — works without it) ---
 let supabase = null;
@@ -428,7 +432,7 @@ app.post('/api/agents/match', (req, res) => {
 // ══════════════════════════════════════════════════════════════
 
 function isAdmin(email) {
-  return email && email.toLowerCase().trim() === ADMIN_EMAIL;
+  return email && ADMIN_EMAILS.includes(email.toLowerCase().trim());
 }
 
 // --- Profile ---

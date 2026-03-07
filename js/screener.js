@@ -34,6 +34,17 @@ const Screener = {
         }
     },
 
+    /* ---------- Extract text from Image using Tesseract ---------- */
+    async extractImageText(file) {
+        try {
+            const result = await Tesseract.recognize(file, 'eng');
+            return result.data.text || '';
+        } catch (err) {
+            console.error('OCR error:', err);
+            return '';
+        }
+    },
+
     /* ---------- Extract text from any supported file ---------- */
     async extractText(file) {
         const name = file.name.toLowerCase();
@@ -43,6 +54,8 @@ const Screener = {
             return await this.extractTxtText(file);
         } else if (name.endsWith('.doc') || name.endsWith('.docx')) {
             return await this.extractDocxText(file);
+        } else if (name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg')) {
+            return await this.extractImageText(file);
         }
         return '';
     },

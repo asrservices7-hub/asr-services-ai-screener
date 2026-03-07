@@ -11,6 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         .skill-tag {
             background: var(--accent-primary-light);
@@ -90,11 +91,11 @@
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <label class="btn btn-secondary btn-sm"
                                     style="cursor:pointer; margin:0; padding:6px 14px; font-size:0.8rem;">
-                                    📎 Upload JD File
-                                    <input type="file" id="jdFileInput" accept=".pdf,.doc,.docx,.txt,.text"
-                                        style="display:none;">
+                                    📎 Upload JD
+                                    <input type="file" id="jdFileInput"
+                                        accept=".pdf,.doc,.docx,.txt,.text,.png,.jpg,.jpeg" style="display:none;">
                                 </label>
-                                <span style="font-size:0.75rem; color:var(--text-muted);">PDF, Word, TXT</span>
+                                <span style="font-size:0.75rem; color:var(--text-muted);">PDF, Word, TXT, Image</span>
                             </div>
                             <div style="font-size:0.75rem; color:var(--text-muted);" id="jdCharCount">0 characters (min
                                 50)</div>
@@ -153,10 +154,11 @@
                     </div>
 
                     <div class="upload-zone" id="uploadZone">
-                        <input type="file" id="resumeFiles" multiple accept=".pdf,.txt,.text,.doc,.docx">
+                        <input type="file" id="resumeFiles" multiple
+                            accept=".pdf,.txt,.text,.doc,.docx,.png,.jpg,.jpeg">
                         <div class="upload-icon">📂</div>
                         <div class="upload-text"><strong>Drag & Drop</strong> resumes or click to browse</div>
-                        <div class="upload-hint">PDF, Word (.doc/.docx), TXT — Up to 1,000 files</div>
+                        <div class="upload-hint">PDF, Word, TXT, Image — Up to 1,000 files</div>
                     </div>
 
                     <div id="fileListContainer" class="hidden mt-3">

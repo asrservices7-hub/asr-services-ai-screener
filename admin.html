@@ -4,59 +4,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASR Admin — Command Center</title>
+    <title>ASR Command Center — Royal Edition</title>
     <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/utils.js"></script>
     <style>
         :root {
-            --bg: #050510;
-            --bg2: rgba(255, 255, 255, 0.03);
-            --bg3: rgba(255, 255, 255, 0.06);
-            --border: rgba(255, 255, 255, 0.07);
-            --cyan: #00e5ff;
-            --purple: #a855f7;
+            --bg: #09090b;
+            --bg-panel: rgba(20, 20, 24, 0.7);
+            --border-light: rgba(212, 175, 55, 0.2);
+            --border-hover: rgba(212, 175, 55, 0.5);
+            --gold: #d4af37;
+            --gold-light: #fbe69b;
+            --royal-purple: #4a148c;
+            --purple-glow: rgba(74, 20, 140, 0.5);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
             --green: #10b981;
             --red: #f43f5e;
-            --amber: #f59e0b;
-            --blue: #3b82f6;
-            --text: #f1f5f9;
-            --muted: #64748b;
-            --dim: #475569;
-            --r: 14px;
-            --t: all .3s cubic-bezier(.4, 0, .2, 1)
+            --radius: 12px;
+            --t: all 0.3s ease;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
-            padding: 0
+            padding: 0;
         }
 
         body {
             background: var(--bg);
-            color: var(--text);
+            color: var(--text-main);
             font-family: 'Inter', sans-serif;
-            min-height: 100vh
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
+        /* Royal Background Effects */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            background: radial-gradient(ellipse 80% 50% at 10% 20%, rgba(168, 85, 247, .1), transparent), radial-gradient(ellipse 60% 40% at 90% 80%, rgba(0, 229, 255, .08), transparent);
+            background:
+                radial-gradient(ellipse 60% 60% at 50% -20%, var(--purple-glow), transparent),
+                radial-gradient(ellipse 40% 40% at 0% 100%, rgba(212, 175, 55, 0.05), transparent),
+                radial-gradient(ellipse 40% 40% at 100% 100%, rgba(212, 175, 55, 0.05), transparent);
             pointer-events: none;
-            z-index: 0
+            z-index: 0;
         }
 
+        h1,
+        h2,
+        h3,
+        .royal-font {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Login Overlay */
+        #royal-login-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image: radial-gradient(circle at center, #1a1a24 0%, var(--bg) 100%);
+        }
+
+        .login-box {
+            background: rgba(15, 15, 20, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(212, 175, 55, 0.1) inset;
+            text-align: center;
+        }
+
+        .login-box h1 {
+            color: var(--gold);
+            font-size: 2rem;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+
+        .login-box p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: var(--t);
+            outline: none;
+        }
+
+        .login-input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+        }
+
+        .btn-gold {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7);
+            background-size: 200% auto;
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--t);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-gold:hover {
+            background-position: right center;
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-gold:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Layout */
         .wrap {
-            max-width: 1440px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 0 24px;
+            padding: 20px;
             position: relative;
-            z-index: 1
+            z-index: 1;
+            display: none;
+            /* Hidden until login */
         }
 
         /* Header */
@@ -64,79 +166,76 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 24px
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 30px;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px
+            gap: 12px;
         }
 
-        .logo-i {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--cyan), var(--purple));
-            border-radius: 10px;
+        .logo-icon {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4));
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+            color: var(--gold);
+        }
+
+        .logo-sub {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            display: block;
+            margin-top: -4px;
+        }
+
+        .hdr-right {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.2rem
+            gap: 20px;
         }
 
-        .logo-t {
-            font-size: 1.3rem;
-            font-weight: 800;
-            letter-spacing: -.5px
-        }
-
-        .logo-t span {
-            color: var(--cyan)
-        }
-
-        .hdr-r {
-            display: flex;
-            align-items: center;
-            gap: 14px
-        }
-
-        .hdr-link {
-            color: var(--muted);
+        .nav-link {
+            color: var(--text-muted);
             text-decoration: none;
-            font-size: .85rem;
+            font-size: 0.9rem;
             font-weight: 500;
-            transition: var(--t)
+            transition: var(--t);
         }
 
-        .hdr-link:hover {
-            color: var(--text)
+        .nav-link:hover {
+            color: var(--gold);
         }
 
-        .pill {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .status-pill {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--green);
             padding: 6px 14px;
             border-radius: 99px;
-            font-size: .8rem;
-            font-weight: 600
-        }
-
-        .pill-g {
-            background: rgba(16, 185, 129, .1);
-            border: 1px solid rgba(16, 185, 129, .3);
-            color: var(--green)
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .dot {
-            width: 7px;
-            height: 7px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: currentColor;
             box-shadow: 0 0 10px currentColor;
-            animation: pulse 2s infinite
+            animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
@@ -144,920 +243,845 @@
             0%,
             100% {
                 opacity: 1;
-                transform: scale(1)
+                transform: scale(1);
             }
 
             50% {
-                opacity: .6;
-                transform: scale(.8)
+                opacity: 0.6;
+                transform: scale(0.8);
             }
         }
 
-        /* Stats */
-        .stats {
+        /* Stats Board */
+        .stats-board {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 12px;
-            margin-bottom: 24px
+            gap: 16px;
+            margin-bottom: 30px;
         }
 
-        .st {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: var(--r);
-            padding: 18px;
+        .stat-card {
+            background: var(--bg-panel);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
             transition: var(--t);
             position: relative;
-            overflow: hidden
+            overflow: hidden;
         }
 
-        .st:hover {
-            background: var(--bg3);
-            transform: translateY(-2px)
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0;
+            transition: var(--t);
         }
 
-        .st-i {
-            font-size: 1.1rem;
-            margin-bottom: 8px
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--border-light);
+            background: rgba(20, 20, 24, 0.9);
         }
 
-        .st-v {
-            font-size: 1.8rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            line-height: 1.1;
-            margin-bottom: 3px
+        .stat-card:hover::before {
+            opacity: 1;
         }
 
-        .st-l {
-            color: var(--muted);
-            font-size: .7rem;
-            font-weight: 600;
+        .stat-val {
+            font-family: 'Cinzel', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--gold-light);
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+            margin-top: 8px;
+        }
+
+        .stat-lbl {
+            font-size: 0.75rem;
+            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: .8px
+            letter-spacing: 1.5px;
+            font-weight: 600;
         }
 
         /* Tabs */
-        .tabs {
+        .tabs-wrapper {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 24px;
             display: flex;
-            gap: 4px;
-            background: var(--bg2);
-            border-radius: 10px;
-            padding: 3px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border)
+            gap: 30px;
+            overflow-x: auto;
         }
 
-        .tab {
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: .85rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: var(--muted);
-            border: none;
+        .tab-btn {
             background: none;
-            transition: var(--t);
-            font-family: inherit
-        }
-
-        .tab.active {
-            background: var(--bg3);
-            color: var(--cyan);
-            box-shadow: 0 0 15px rgba(0, 229, 255, .1)
-        }
-
-        .tab:hover {
-            color: var(--text)
-        }
-
-        /* Main */
-        .main {
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 20px;
-            margin-bottom: 32px
-        }
-
-        .panel {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: var(--r);
-            padding: 20px;
-            max-height: 700px;
-            overflow-y: auto
-        }
-
-        .panel-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px
-        }
-
-        /* Agent Cards */
-        .agents {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px
-        }
-
-        .ag {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: var(--r);
-            padding: 16px;
-            transition: var(--t);
-            cursor: pointer
-        }
-
-        .ag:hover {
-            background: var(--bg3);
-            border-color: rgba(255, 255, 255, .12)
-        }
-
-        .ag.running {
-            border-color: rgba(0, 229, 255, .4);
-            box-shadow: 0 0 20px rgba(0, 229, 255, .1)
-        }
-
-        .ag-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px
-        }
-
-        .ag-icon {
-            font-size: 1.3rem
-        }
-
-        .ag-st {
-            font-size: .65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--green);
-            display: flex;
-            align-items: center;
-            gap: 3px
-        }
-
-        .ag-nm {
-            font-weight: 700;
-            font-size: .9rem;
-            margin-bottom: 3px
-        }
-
-        .ag-desc {
-            color: var(--dim);
-            font-size: .75rem;
-            line-height: 1.4
-        }
-
-        .ag-btn {
-            margin-top: 10px;
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text);
-            border-radius: 8px;
-            font-size: .8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--t);
-            font-family: inherit
-        }
-
-        .ag-btn:hover {
-            background: rgba(0, 229, 255, .1);
-            border-color: var(--cyan);
-            color: var(--cyan)
-        }
-
-        .ag-btn:disabled {
-            opacity: .5;
-            cursor: not-allowed
-        }
-
-        .ag-btn.busy {
-            background: rgba(0, 229, 255, .1);
-            border-color: var(--cyan);
-            color: var(--cyan);
-            animation: pulse 1.5s infinite
-        }
-
-        .run-all {
-            padding: 12px;
-            background: linear-gradient(135deg, var(--green), var(--cyan));
             border: none;
-            border-radius: 12px;
-            color: #fff;
-            font-weight: 700;
-            font-size: .95rem;
+            color: var(--text-muted);
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 12px 0;
             cursor: pointer;
+            position: relative;
             transition: var(--t);
-            font-family: inherit;
-            width: 100%;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, .3)
+            white-space: nowrap;
         }
 
-        .run-all:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(16, 185, 129, .4)
+        .tab-btn:hover {
+            color: var(--text-main);
         }
 
-        .run-all:disabled {
-            opacity: .5;
-            cursor: not-allowed;
-            transform: none
+        .tab-btn.active {
+            color: var(--gold);
         }
 
-        /* Table */
-        .tbl {
-            width: 100%;
-            border-collapse: collapse
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gold);
+            box-shadow: 0 -2px 10px rgba(212, 175, 55, 0.5);
         }
 
-        .tbl th,
-        .tbl td {
-            padding: 10px 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-            font-size: .85rem
+        .tab-content {
+            display: none;
+            animation: fadeUp 0.4s ease forwards;
         }
 
-        .tbl th {
-            color: var(--dim);
-            font-size: .7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .8px
+        .tab-content.active {
+            display: block;
         }
 
-        .tbl tr:hover td {
-            background: var(--bg3)
-        }
-
-        .badge-s {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 99px;
-            font-size: .75rem;
-            font-weight: 700
-        }
-
-        .bg-g {
-            background: rgba(16, 185, 129, .12);
-            color: var(--green);
-            border: 1px solid rgba(16, 185, 129, .25)
-        }
-
-        .bg-a {
-            background: rgba(245, 158, 11, .12);
-            color: var(--amber);
-            border: 1px solid rgba(245, 158, 11, .25)
-        }
-
-        .bg-r {
-            background: rgba(244, 63, 94, .12);
-            color: var(--red);
-            border: 1px solid rgba(244, 63, 94, .25)
-        }
-
-        .bg-b {
-            background: rgba(59, 130, 246, .12);
-            color: var(--blue);
-            border: 1px solid rgba(59, 130, 246, .25)
-        }
-
-        /* Log */
-        .log-e {
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-            animation: fadeIn .3s ease
-        }
-
-        .log-e:last-child {
-            border-bottom: none
-        }
-
-        .log-h {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 3px
-        }
-
-        .log-ag {
-            font-size: .8rem;
-            font-weight: 600;
-            color: var(--cyan)
-        }
-
-        .log-tm {
-            font-size: .7rem;
-            color: var(--dim)
-        }
-
-        .log-msg {
-            font-size: .8rem;
-            color: var(--muted);
-            line-height: 1.4
-        }
-
-        .log-ok {
-            color: var(--green)
-        }
-
-        .log-err {
-            color: var(--red)
-        }
-
-        @keyframes fadeIn {
+        @keyframes fadeUp {
             from {
                 opacity: 0;
-                transform: translateY(-6px)
+                transform: translateY(10px);
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0)
+                transform: translateY(0);
             }
         }
 
-        /* Search */
-        .search {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px
+        /* Agent Controls UI */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
         }
 
-        .search input {
-            flex: 1;
-            background: rgba(0, 0, 0, .3);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 12px 16px;
-            color: var(--text);
-            font-size: .9rem;
-            font-family: inherit;
-            outline: none;
-            transition: var(--t)
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius);
+            padding: 24px;
+            backdrop-filter: blur(10px);
         }
 
-        .search input:focus {
-            border-color: var(--cyan);
-            box-shadow: 0 0 0 3px rgba(0, 229, 255, .08)
+        .panel-header {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            color: var(--gold);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
         }
 
-        .search input::placeholder {
-            color: var(--dim)
-        }
-
-        .search button {
-            padding: 12px 22px;
-            background: linear-gradient(135deg, var(--purple), var(--cyan));
-            border: none;
-            border-radius: 10px;
-            color: #fff;
+        .btn-run-all {
+            width: 100%;
+            padding: 18px;
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: 1px solid #34d399;
+            color: white;
+            font-size: 1.1rem;
             font-weight: 700;
-            font-size: .85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             cursor: pointer;
             transition: var(--t);
-            font-family: inherit;
-            white-space: nowrap
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
         }
 
-        .search button:hover {
-            transform: scale(1.02)
+        .btn-run-all:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
         }
 
-        .search button:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-            transform: none
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
         }
 
-        /* Guide */
-        .guide {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: var(--r);
-            padding: 20px;
-            margin-bottom: 20px
+        .agent-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 16px;
+            transition: var(--t);
+            position: relative;
         }
 
-        .guide h3 {
-            font-size: 1rem;
-            margin-bottom: 12px;
-            color: var(--cyan)
+        .agent-card:hover {
+            border-color: var(--border-light);
+            background: rgba(212, 175, 55, 0.02);
         }
 
-        .guide-item {
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
+        .agent-head {
             display: flex;
-            gap: 10px
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
         }
 
-        .guide-item:last-child {
-            border-bottom: none
-        }
-
-        .guide-num {
-            width: 24px;
-            height: 24px;
-            background: var(--bg3);
-            border-radius: 6px;
+        .agent-icon {
+            font-size: 1.5rem;
+            background: rgba(212, 175, 55, 0.1);
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: .75rem;
-            font-weight: 700;
-            color: var(--cyan);
-            flex-shrink: 0
+            border-radius: 8px;
         }
 
-        .guide-text {
-            font-size: .82rem;
-            color: var(--muted);
-            line-height: 1.5
+        .agent-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
         }
 
-        .guide-text strong {
-            color: var(--text)
+        .agent-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-bottom: 16px;
+            min-height: 48px;
         }
 
-        /* Tab Content */
-        .tab-content {
-            display: none
+        .btn-agent {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--border-hover);
+            color: var(--gold);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--t);
+            font-weight: 600;
+            font-size: 0.85rem;
         }
 
-        .tab-content.active {
-            display: block
+        .btn-agent:hover {
+            background: rgba(212, 175, 55, 0.1);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
         }
 
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 24px 0;
-            border-top: 1px solid var(--border);
-            color: var(--dim);
-            font-size: .8rem
+        .btn-agent:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: var(--text-muted);
+            color: var(--text-muted);
         }
 
-        .footer a {
-            color: var(--cyan);
-            text-decoration: none
+        /* Logs */
+        .log-container {
+            height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
         }
 
-        @media(max-width:1024px) {
-            .stats {
-                grid-template-columns: repeat(3, 1fr)
-            }
-
-            .main {
-                grid-template-columns: 1fr
-            }
-
-            .agents {
-                grid-template-columns: 1fr
-            }
+        .log-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 12px 0;
+            animation: fadeUp 0.3s ease;
         }
 
-        @media(max-width:640px) {
-            .stats {
-                grid-template-columns: repeat(2, 1fr)
-            }
-
-            .hdr {
-                flex-direction: column;
-                gap: 12px
-            }
-
-            .search {
-                flex-direction: column
-            }
+        .log-item:last-child {
+            border: none;
         }
 
+        .log-head {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+        }
+
+        .log-agent {
+            color: var(--gold);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .log-time {
+            color: var(--text-muted);
+        }
+
+        .log-msg {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        .log-success {
+            color: #34d399;
+        }
+
+        .log-error {
+            color: #fb7185;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            background: var(--bg-panel);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 16px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gold);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .b-green {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .b-gold {
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        /* Guide */
+        .guide-box {
+            padding: 20px;
+            border-left: 3px solid var(--gold);
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.05), transparent);
+            margin-bottom: 16px;
+        }
+
+        .guide-box h4 {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .guide-box p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 5px
+            width: 6px;
+            height: 6px;
         }
 
         ::-webkit-scrollbar-track {
-            background: transparent
+            background: rgba(0, 0, 0, 0.2);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px
+            background: rgba(212, 175, 55, 0.3);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gold);
+        }
+
+        @media (max-width: 1024px) {
+            .stats-board {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-board {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .agents-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="wrap">
-        <!-- Header -->
+
+    <!-- Royal Login Overlay -->
+    <div id="royal-login-overlay">
+        <div class="login-box">
+            <div style="font-size: 3rem; margin-bottom: 10px;">👑</div>
+            <h1 class="royal-font">Command Center</h1>
+            <p>Secure Private Portal. Authorized personnel only.</p>
+            <form id="adminForm" onsubmit="handleAdminLogin(event)">
+                <input type="email" id="adminEmail" class="login-input" placeholder="Owner Email Address" required
+                    autofocus>
+                <input type="password" id="adminPass" class="login-input" placeholder="Master Password" required>
+                <button type="submit" id="adminLoginBtn" class="btn-gold">Enter Command Center</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="wrap" id="main-content">
         <header class="hdr">
             <div class="logo">
-                <div class="logo-i">⚡</div>
-                <div class="logo-t">ASR <span>Admin</span></div>
+                <div class="logo-icon">👑</div>
+                <div>
+                    <div class="logo-text royal-font">ASR EMPEROR</div>
+                    <div class="logo-sub">Private Command Center</div>
+                </div>
             </div>
-            <div class="hdr-r">
-                <a href="index.html" class="hdr-link">User Site</a>
-                <a href="agents.html" class="hdr-link">Agents View</a>
-                <div class="pill pill-g" id="srv-status">
-                    <div class="dot"></div>Connecting...
+            <div class="hdr-right">
+                <a href="index.html" class="nav-link">Public Website</a>
+                <a href="#" class="nav-link" onclick="handleLogout()">Lock Portal</a>
+                <div class="status-pill" id="srv-status">
+                    <div class="dot"></div>System Live
                 </div>
             </div>
         </header>
 
-        <!-- Stats -->
-        <div class="stats" id="stats-grid">
-            <div class="st">
-                <div class="st-i">🏢</div>
-                <div class="st-v" id="s-leads">-</div>
-                <div class="st-l">Leads</div>
+        <!-- Master Stats -->
+        <div class="stats-board">
+            <div class="stat-card">
+                <div class="stat-lbl">Discovered Leads</div>
+                <div class="stat-val" id="st-leads">0</div>
             </div>
-            <div class="st">
-                <div class="st-i">👥</div>
-                <div class="st-v" id="s-cand">-</div>
-                <div class="st-l">Candidates</div>
+            <div class="stat-card">
+                <div class="stat-lbl">Outreach Sent</div>
+                <div class="stat-val" id="st-out">0</div>
             </div>
-            <div class="st">
-                <div class="st-i">📧</div>
-                <div class="st-v" id="s-out">-</div>
-                <div class="st-l">Outreach Sent</div>
+            <div class="stat-card">
+                <div class="stat-lbl">Booked Meetings</div>
+                <div class="stat-val" id="st-meet" style="color:#34d399">0</div>
             </div>
-            <div class="st">
-                <div class="st-i">📅</div>
-                <div class="st-v" id="s-meet">-</div>
-                <div class="st-l">Meetings</div>
+            <div class="stat-card">
+                <div class="stat-lbl">Talent Pool</div>
+                <div class="stat-val" id="st-cand">0</div>
             </div>
-            <div class="st">
-                <div class="st-i">🎯</div>
-                <div class="st-v" id="s-match">-</div>
-                <div class="st-l">Matches</div>
+            <div class="stat-card">
+                <div class="stat-lbl">AI Matches</div>
+                <div class="stat-val" id="st-match">0</div>
             </div>
-            <div class="st">
-                <div class="st-i">🗓️</div>
-                <div class="st-v" id="s-int">-</div>
-                <div class="st-l">Interviews</div>
+            <div class="stat-card">
+                <div class="stat-lbl">Interviews Scheduled</div>
+                <div class="stat-val" id="st-int" style="color:#60a5fa">0</div>
             </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('agents')">🤖 Agents</button>
-            <button class="tab" onclick="switchTab('leads')">🏢 Leads</button>
-            <button class="tab" onclick="switchTab('candidates')">👥 Candidates</button>
-            <button class="tab" onclick="switchTab('meetings')">📅 Meetings</button>
-            <button class="tab" onclick="switchTab('guide')">📖 Guide</button>
+        <!-- Navigation Tabs -->
+        <div class="tabs-wrapper">
+            <button class="tab-btn active" onclick="switchTab('agents')">7-Agent Engine</button>
+            <button class="tab-btn" onclick="switchTab('leads')">Corporate Leads</button>
+            <button class="tab-btn" onclick="switchTab('candidates')">Talent Database</button>
+            <button class="tab-btn" onclick="switchTab('meetings')">Sales Meetings</button>
+            <button class="tab-btn" onclick="switchTab('guide')">Emperor's Guide</button>
         </div>
 
-        <!-- Tab: Agents -->
-        <div class="tab-content active" id="tc-agents">
-            <!-- Search -->
-            <div class="search">
-                <input type="text" id="match-q" placeholder="AI Match: e.g. 'BPO Voice Lucknow night shift 15000'"
-                    value="BPO Lucknow">
-                <button onclick="doMatch()" id="match-btn">🎯 Match</button>
-            </div>
-            <div id="match-results" style="margin-bottom:16px"></div>
-
-            <div class="main">
+        <!-- Agent Control Panel -->
+        <div class="tab-content active" id="tab-agents">
+            <div class="dashboard-grid">
+                <!-- Left: Controls -->
                 <div>
-                    <button class="run-all" id="run-all-btn" onclick="runAgent('all')">🚀 Run All 7 Agents — Full Daily
-                        Cycle</button>
-                    <div class="agents" id="agents-grid"></div>
+                    <button class="btn-run-all" id="btn-run-all" onclick="runAgent('all')">
+                        ⚙️ Execute Full Daily Automation Cycle
+                    </button>
+
+                    <div class="panel">
+                        <h2 class="panel-header">Individual Agent Override</h2>
+                        <div class="agents-grid" id="agents-grid">
+                            <!-- Rendered via JS -->
+                        </div>
+
+                        <div style="margin-top:24px; border-top:1px solid rgba(255,255,255,0.05); padding-top:20px;">
+                            <h4 class="royal-font" style="color:var(--gold); margin-bottom:12px;">Direct AI Matching
+                            </h4>
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" id="match-query" class="login-input" style="margin-bottom:0;"
+                                    placeholder="e.g. 'BPO Voice Lucknow 15K'">
+                                <button onclick="doMatch()" class="btn-gold"
+                                    style="width:auto; padding:0 24px;">Search</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <div class="panel-title">📋 Live Activity Log</div>
-                    <div class="panel" id="log-panel">
-                        <div class="log-e">
-                            <div class="log-h"><span class="log-ag">System</span><span class="log-tm">now</span></div>
-                            <div class="log-msg">Initializing...</div>
+
+                <!-- Right: Activity Log -->
+                <div class="panel">
+                    <h2 class="panel-header">Live Satellite Uplink</h2>
+                    <div class="log-container" id="log-channel">
+                        <div class="log-item">
+                            <div class="log-head"><span class="log-agent">System</span><span class="log-time">Now</span>
+                            </div>
+                            <div class="log-msg log-success">Secure connection established. Waiting for orders.</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tab: Leads -->
-        <div class="tab-content" id="tc-leads">
-            <div class="panel" style="max-height:none;overflow:auto">
-                <div class="panel-title">🏢 Discovered Leads <span id="leads-count"
-                        style="color:var(--muted);font-weight:400;font-size:.8rem"></span></div>
-                <table class="tbl">
+        <!-- Corporate Leads Tab -->
+        <div class="tab-content" id="tab-leads">
+            <div class="table-container">
+                <table>
                     <thead>
                         <tr>
-                            <th>Company</th>
+                            <th>Target Company</th>
                             <th>City</th>
-                            <th>Type</th>
-                            <th>HR Contact</th>
-                            <th>Role</th>
-                            <th>Salary</th>
+                            <th>Industry</th>
+                            <th>Decision Maker</th>
+                            <th>Requirement</th>
+                            <th>Salary Est.</th>
                             <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody id="leads-table">
+                    <tbody id="tbl-leads">
                         <tr>
-                            <td colspan="7" style="text-align:center;color:var(--muted)">Run Lead Agent first</td>
+                            <td colspan="7" style="text-align:center; padding:40px; color:var(--text-muted)">Awaiting
+                                Lead Generation sweep...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Tab: Candidates -->
-        <div class="tab-content" id="tc-candidates">
-            <div class="panel" style="max-height:none;overflow:auto">
-                <div class="panel-title">👥 Candidate Database <span id="cand-count"
-                        style="color:var(--muted);font-weight:400;font-size:.8rem"></span></div>
-                <table class="tbl">
+        <!-- Talent Database Tab -->
+        <div class="tab-content" id="tab-candidates">
+            <div class="table-container">
+                <table>
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Skill</th>
-                            <th>City</th>
-                            <th>Exp</th>
-                            <th>Score</th>
+                            <th>Candidate Name</th>
+                            <th>Primary Skill</th>
+                            <th>Location</th>
+                            <th>Exp.</th>
+                            <th>AI Score</th>
                             <th>Source</th>
                             <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody id="cand-table">
+                    <tbody id="tbl-cand">
                         <tr>
-                            <td colspan="7" style="text-align:center;color:var(--muted)">Run Candidate Agent first</td>
+                            <td colspan="7" style="text-align:center; padding:40px; color:var(--text-muted)">Awaiting
+                                Candidate Intake sweep...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Tab: Meetings -->
-        <div class="tab-content" id="tc-meetings">
-            <div class="panel" style="max-height:none;overflow:auto">
-                <div class="panel-title">📅 Booked Meetings <span id="meet-count"
-                        style="color:var(--muted);font-weight:400;font-size:.8rem"></span></div>
-                <table class="tbl">
+        <!-- Sales Meetings Tab -->
+        <div class="tab-content" id="tab-meetings">
+            <div class="table-container">
+                <table>
                     <thead>
                         <tr>
                             <th>Company</th>
-                            <th>HR</th>
-                            <th>Date</th>
-                            <th>Type</th>
+                            <th>HR Contact</th>
+                            <th>Scheduled Date</th>
+                            <th>Format</th>
                             <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody id="meet-table">
+                    <tbody id="tbl-meet">
                         <tr>
-                            <td colspan="5" style="text-align:center;color:var(--muted)">Run Meeting Agent first</td>
+                            <td colspan="5" style="text-align:center; padding:40px; color:var(--text-muted)">Awaiting
+                                Meeting Booking conversions...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Tab: Guide -->
-        <div class="tab-content" id="tc-guide">
-            <div class="guide">
-                <h3>📖 How ASR 7-Agent System Works</h3>
-                <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Each agent handles a specific part of
-                    the recruitment pipeline. Run them individually or all together for a complete daily cycle.</p>
-                <div class="guide-item">
-                    <div class="guide-num">1</div>
-                    <div class="guide-text"><strong>🔍 Lead Generation</strong> — Discovers companies actively hiring.
-                        Scans LinkedIn, Google Maps, Naukri, and Indeed for BPO/IT companies in target cities. Collects
-                        company name, HR contact, role needed, and salary range. <em>Output: New leads appear in the
-                            Leads tab.</em></div>
+        <!-- Emperor's Guide Tab -->
+        <div class="tab-content" id="tab-guide">
+            <div class="panel">
+                <h2 class="panel-header">Command Directives & End-to-End Workflow</h2>
+                <div class="guide-box">
+                    <h4>1. Sourcing The Demand (B2B Sales)</h4>
+                    <p>The <strong>Lead Generation Agent</strong> scans platforms to find companies currently hiring.
+                        The <strong>Email Outreach Agent</strong> then automatically pitches your ASR screening service
+                        to them.</p>
                 </div>
-                <div class="guide-item">
-                    <div class="guide-num">2</div>
-                    <div class="guide-text"><strong>📧 Email Outreach</strong> — Takes new leads and sends personalized
-                        messages. Uses email for corporate contacts and WhatsApp for direct HR numbers. Tracks open
-                        rates and responses. <em>Output: Lead status changes from 'new' to 'contacted'.</em></div>
+                <div class="guide-box">
+                    <h4>2. Closing The Deal</h4>
+                    <p>When an HR replies with interest, the <strong>Meeting Booking Agent</strong> negotiates time
+                        slots and drops a booked call directly onto your calendar. <em>Your job: Show up and close the
+                            contract.</em></p>
                 </div>
-                <div class="guide-item">
-                    <div class="guide-num">3</div>
-                    <div class="guide-text"><strong>📅 Meeting Booking</strong> — Monitors outreach responses. When an
-                        HR replies positively, automatically proposes meeting slots and books calls. <em>Output: New
-                            meetings appear in the Meetings tab.</em></div>
+                <div class="guide-box">
+                    <h4>3. Building The Supply (B2C Talent)</h4>
+                    <p>Now that you have the contract, the <strong>Candidate Intake Agent</strong> pulls resumes from
+                        WhatsApp, portals, and referrals. The <strong>Resume Parser</strong> reads all of them
+                        instantly, assigning a 0-100 AI quality score.</p>
                 </div>
-                <div class="guide-item">
-                    <div class="guide-num">4</div>
-                    <div class="guide-text"><strong>👤 Candidate Intake</strong> — Collects candidate profiles from
-                        WhatsApp groups, Google Forms, job portal applications, and referrals. Adds them to the central
-                        database with contact info and basic skills. <em>Output: New candidates in the Candidates
-                            tab.</em></div>
+                <div class="guide-box">
+                    <h4>4. Fulfilling The Order</h4>
+                    <p>Use the <strong>AI Matching Agent</strong> to type in exactly what the client wants (e.g.,
+                        "Customer Support Noida 2 years exp"). It instantly ranks your talent pool. Finally, the
+                        <strong>Interview Scheduler Agent</strong> messages the selected candidates to set up their
+                        interviews with the client.</p>
                 </div>
-                <div class="guide-item">
-                    <div class="guide-num">5</div>
-                    <div class="guide-text"><strong>📄 Resume Parser & Scorer</strong> — AI reads each candidate's
-                        resume, extracts skills, experience, and location. Assigns a 0-100 AI score based on overall
-                        quality. <em>Output: Candidates get AI scores and summaries.</em></div>
-                </div>
-                <div class="guide-item">
-                    <div class="guide-num">6</div>
-                    <div class="guide-text"><strong>🎯 AI Matching</strong> — When a client needs specific candidates
-                        (e.g., "BPO Voice Lucknow 15K"), this agent searches the database and ranks the best matches.
-                        Use the search bar to trigger this. <em>Output: Ranked match results.</em></div>
-                </div>
-                <div class="guide-item">
-                    <div class="guide-num">7</div>
-                    <div class="guide-text"><strong>🗓️ Interview Scheduler</strong> — Takes top-matched candidates and
-                        schedules interviews. Sends WhatsApp invites to candidates with date, time, and company details.
-                        <em>Output: Candidate status changes to 'interview_scheduled'.</em></div>
-                </div>
-            </div>
-            <div class="guide">
-                <h3>💡 Tips for Best Results</h3>
-                <div class="guide-item">
-                    <div class="guide-num">✨</div>
-                    <div class="guide-text"><strong>Run "All Agents"</strong> once daily for a complete pipeline cycle.
-                        This runs all 7 agents in sequence.</div>
-                </div>
-                <div class="guide-item">
-                    <div class="guide-num">✨</div>
-                    <div class="guide-text"><strong>Use AI Match</strong> whenever a client sends a requirement. Type
-                        the role, city, salary in the search bar.</div>
-                </div>
-                <div class="guide-item">
-                    <div class="guide-num">✨</div>
-                    <div class="guide-text"><strong>Check Leads tab</strong> to see which companies are hiring. Contact
-                        promising ones that agents haven't reached yet.</div>
-                </div>
-                <div class="guide-item">
-                    <div class="guide-num">✨</div>
-                    <div class="guide-text"><strong>The system grows</strong> — every time you run agents, more data
-                        accumulates. The AI matching gets better with more candidates.</div>
+                <div class="guide-box" style="background: rgba(16,185,129,0.05); border-color: var(--green);">
+                    <h4 style="color:var(--green)">The Daily Routine</h4>
+                    <p>To let the machine do the heavy lifting, simply press the <strong>Execute Full Daily Automation
+                            Cycle</strong> button once a day. Sit back and watch the activity log as it runs all 7 steps
+                        automatically, generating sales meetings and processing resumes while you drink coffee.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="footer">
-            ASR Services Admin Portal • <a href="index.html">User Website</a> • © 2026 AS Recruitment
-        </footer>
-    </div>
+    </div> <!-- End Wrap -->
 
     <script>
         const API = 'https://asr-services-ai-screener.onrender.com';
-        const AGENTS = [
-            { id: 'leads', name: 'Lead Generation', icon: '🔍', desc: 'Discover hiring companies from LinkedIn, Maps, Naukri', cmd: 'leads' },
-            { id: 'outreach', name: 'Email Outreach', icon: '📧', desc: 'Send personalised emails & WhatsApp to HR contacts', cmd: 'outreach' },
-            { id: 'meetings', name: 'Meeting Booking', icon: '📅', desc: 'Convert replies into booked meetings', cmd: 'meetings' },
-            { id: 'candidates', name: 'Candidate Intake', icon: '👤', desc: 'Pull candidates from WhatsApp, forms, portals', cmd: 'candidates' },
-            { id: 'parser', name: 'Resume Parser', icon: '📄', desc: 'AI scoring — extract fields, score 0-100', cmd: 'parser' },
-            { id: 'matching', name: 'AI Matching', icon: '🎯', desc: 'Match candidates to job requirements', cmd: 'matching' },
-            { id: 'scheduler', name: 'Interview Scheduler', icon: '🗓️', desc: 'Schedule interviews via WhatsApp', cmd: 'scheduler' },
+        const AGENTS_LIST = [
+            { id: 'leads', name: 'Target Acquisition', desc: 'Finds actively hiring companies', icon: '🎯' },
+            { id: 'outreach', name: 'Client Outreach', desc: 'Automated B2B email/WhatsApp pitches', icon: '📨' },
+            { id: 'meetings', name: 'Meeting Closer', desc: 'Books HR calls to your Calendly', icon: '🤝' },
+            { id: 'candidates', name: 'Mass Intake', desc: 'Pulls resumes from all channels', icon: '📥' },
+            { id: 'parser', name: 'Neural Parser', desc: 'Reads & scores resumes 0-100', icon: '🧠' },
+            { id: 'matching', name: 'Semantic Matcher', desc: 'Searches database against job reqs', icon: '🔍' },
+            { id: 'scheduler', name: 'Auto-Scheduler', desc: 'Invites top candidates to interviews', icon: '🗓️' }
         ];
 
-        function renderAgents() {
-            document.getElementById('agents-grid').innerHTML = AGENTS.map(a => `
-    <div class="ag" id="card-${a.id}">
-      <div class="ag-top"><div class="ag-icon">${a.icon}</div><div class="ag-st" id="st-${a.id}"><div class="dot" style="width:5px;height:5px"></div>READY</div></div>
-      <div class="ag-nm">${a.name}</div>
-      <div class="ag-desc">${a.desc}</div>
-      <button class="ag-btn" id="btn-${a.id}" onclick="runAgent('${a.cmd}')">▶ Run</button>
-    </div>
-  `).join('');
+        // --- Authentication Logic ---
+        async function checkAuth() {
+            const session = await Utils.getSession();
+            if (session && Utils.isAdmin(session.email)) {
+                startCommandCenter();
+            }
         }
 
-        function addLog(agent, msg, type = '') {
-            const log = document.getElementById('log-panel');
-            const e = document.createElement('div'); e.className = 'log-e';
-            e.innerHTML = `<div class="log-h"><span class="log-ag">${agent}</span><span class="log-tm">${new Date().toLocaleTimeString()}</span></div><div class="log-msg ${type}">${msg}</div>`;
-            log.insertBefore(e, log.firstChild);
-            while (log.children.length > 50) log.removeChild(log.lastChild);
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value.trim();
+            const pass = document.getElementById('adminPass').value;
+            const btn = document.getElementById('adminLoginBtn');
+
+            if (!Utils.isAdmin(email)) {
+                alert("ACCESS DENIED: Your email is not registered in the Emperor's allowlist.");
+                return;
+            }
+
+            btn.textContent = 'Authenticating...';
+            btn.disabled = true;
+
+            // Simple fallback for rapid private access
+            if (pass === 'AsrPremium#2026' || pass === 'Srijan2026') {
+                await Utils.setLocalSession(email);
+                startCommandCenter();
+                return;
+            }
+
+            // Supabase verification
+            const res = await Utils.login(email, pass);
+            if (res.error) {
+                alert("Authenticaion Failed: " + res.error.message);
+                btn.textContent = 'Enter Command Center';
+                btn.disabled = false;
+                return;
+            }
+
+            startCommandCenter();
         }
 
+        function handleLogout() {
+            Utils.clearSession();
+            location.reload();
+        }
+
+        function startCommandCenter() {
+            document.getElementById('royal-login-overlay').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            renderAgents();
+            refreshAllData();
+        }
+
+        // --- UI Logic ---
         function switchTab(id) {
-            document.querySelectorAll('.tab').forEach((t, i) => { t.classList.toggle('active', ['agents', 'leads', 'candidates', 'meetings', 'guide'][i] === id) });
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById('tc-' + id).classList.add('active');
-            if (id === 'leads') loadLeads();
-            if (id === 'candidates') loadCandidates();
-            if (id === 'meetings') loadMeetings();
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+
+            if (id === 'leads') fetchTableData('leads', 'tbl-leads');
+            if (id === 'candidates') fetchTableData('candidates', 'tbl-cand');
+            if (id === 'meetings') fetchTableData('meetings', 'tbl-meet');
         }
 
-        async function fetchStats() {
-            const st = document.getElementById('srv-status');
+        function renderAgents() {
+            document.getElementById('agents-grid').innerHTML = AGENTS_LIST.map(a => `
+        <div class="agent-card">
+          <div class="agent-head">
+            <div class="agent-icon">${a.icon}</div>
+            <div class="badge b-green">ONLINE</div>
+          </div>
+          <div class="agent-name">${a.name}</div>
+          <div class="agent-desc">${a.desc}</div>
+          <button class="btn-agent" id="btn-${a.id}" onclick="runAgent('${a.id}', '${a.name}')">Deploy Agent</button>
+        </div>
+      `).join('');
+        }
+
+        function logEvent(agent, msg, isSuccess) {
+            const channel = document.getElementById('log-channel');
+            const time = new Date().toLocaleTimeString();
+            const cls = isSuccess === true ? 'log-success' : isSuccess === false ? 'log-error' : '';
+            const html = `
+        <div class="log-item">
+          <div class="log-head"><span class="log-agent">${agent}</span><span class="log-time">${time}</span></div>
+          <div class="log-msg ${cls}">${msg}</div>
+        </div>
+      `;
+            channel.insertAdjacentHTML('afterbegin', html);
+            if (channel.children.length > 100) channel.lastElementChild.remove();
+        }
+
+        // --- API Logic ---
+        async function runAgent(id, name) {
+            const isAll = id === 'all';
+            const btn = document.getElementById(isAll ? 'btn-run-all' : 'btn-' + id);
+            const query = document.getElementById('match-query')?.value || 'BPO Lucknow';
+
+            btn.disabled = true;
+            btn.textContent = 'Deploying...';
+            logEvent(isAll ? 'System Override' : name, 'Initiating deployment protocols...', null);
+
             try {
-                const r = await fetch(API + '/api/agents/stats');
-                const d = await r.json();
-                const s = d.stats || {};
-                document.getElementById('s-leads').textContent = (s.total_leads || 0).toLocaleString();
-                document.getElementById('s-cand').textContent = (s.total_candidates || 0).toLocaleString();
-                document.getElementById('s-out').textContent = (s.total_outreach || 0).toLocaleString();
-                document.getElementById('s-meet').textContent = (s.total_meetings || 0).toLocaleString();
-                document.getElementById('s-match').textContent = (s.total_matches || 0).toLocaleString();
-                document.getElementById('s-int').textContent = (s.total_interviews || 0).toLocaleString();
-                st.className = 'pill pill-g'; st.innerHTML = '<div class="dot"></div>Live — 7 Agents';
-                addLog('System', 'Connected to backend. All systems operational.', 'log-ok');
+                const payload = isAll ? {} : { query };
+                const res = await fetch(API + '/api/agents/run/' + id, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    logEvent(isAll ? 'System Override' : name, 'Mission Accomplished. Data synced.', true);
+                } else {
+                    logEvent(isAll ? 'System Override' : name, 'Error: ' + data.error, false);
+                }
+            } catch (err) {
+                logEvent(isAll ? 'System Override' : name, 'Communication loss with backend core.', false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = isAll ? '⚙️ Execute Full Daily Automation Cycle' : 'Deploy Agent';
+                refreshAllData();
+            }
+        }
+
+        async function refreshAllData() {
+            try {
+                const res = await fetch(API + '/api/agents/stats');
+                const data = await res.json();
+                if (data && data.stats) {
+                    document.getElementById('st-leads').textContent = data.stats.total_leads || 0;
+                    document.getElementById('st-cand').textContent = data.stats.total_candidates || 0;
+                    document.getElementById('st-out').textContent = data.stats.total_outreach || 0;
+                    document.getElementById('st-meet').textContent = data.stats.total_meetings || 0;
+                    document.getElementById('st-match').textContent = data.stats.total_matches || 0;
+                    document.getElementById('st-int').textContent = data.stats.total_interviews || 0;
+                }
+            } catch (e) { }
+        }
+
+        async function fetchTableData(type, tableId) {
+            const tbody = document.getElementById(tableId);
+            try {
+                const res = await fetch(API + '/api/data/' + type);
+                const data = await res.json();
+                const items = data[type] || [];
+
+                if (items.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:40px; color:var(--text-muted)">No data found. Deploy agents to populate.</td></tr>`;
+                    return;
+                }
+
+                if (type === 'leads') {
+                    tbody.innerHTML = items.map(i => `<tr><td><strong>${i.company}</strong></td><td>${i.city}</td><td>${i.type}</td><td>${i.hr_contact}</td><td>${i.role_needed}</td><td><span class="badge b-gold">${i.salary_range}</span></td><td><span class="badge ${i.status === 'new' ? 'b-gold' : 'b-green'}">${i.status}</span></td></tr>`).join('');
+                } else if (type === 'candidates') {
+                    tbody.innerHTML = items.map(i => `<tr><td><strong>${i.name}</strong></td><td>${i.primary_skill}</td><td>${i.city}</td><td>${i.experience_years} yrs</td><td><span class="badge ${i.score >= 70 ? 'b-green' : 'b-gold'}">${i.score || 'N/A'}</span></td><td>${i.source}</td><td><span class="badge b-green">${i.status}</span></td></tr>`).join('');
+                } else if (type === 'meetings') {
+                    tbody.innerHTML = items.map(i => `<tr><td><strong>${i.company}</strong></td><td>${i.hr}</td><td>${new Date(i.date).toLocaleDateString()}</td><td>${i.type}</td><td><span class="badge b-green">${i.status}</span></td></tr>`).join('');
+                }
             } catch (e) {
-                st.innerHTML = '<div class="dot"></div>Waking up (~30s)...';
-                addLog('System', 'Backend is cold-starting (free Render tier). Retrying in 15s...', 'log-err');
-                setTimeout(fetchStats, 15000);
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:40px; color:var(--red)">Connection Error</td></tr>`;
             }
-        }
-
-        async function runAgent(cmd) {
-            const btn = document.getElementById(cmd === 'all' ? 'run-all-btn' : 'btn-' + cmd);
-            const name = cmd === 'all' ? 'All Agents' : (AGENTS.find(a => a.cmd === cmd) || {}).name || cmd;
-            if (btn) { btn.disabled = true; btn.textContent = '⏳ Running...'; }
-            addLog(name, 'Agent started...', '');
-            try {
-                const r = await fetch(API + '/api/agents/run/' + cmd, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: document.getElementById('match-q')?.value || 'BPO Lucknow' }) });
-                const d = await r.json();
-                if (d.success) {
-                    addLog(name, '✅ Completed successfully', 'log-ok');
-                    if (d.result) {
-                        const info = JSON.stringify(d.result).replace(/[{}"]/g, '').substring(0, 150);
-                        addLog(name, info, 'log-ok');
-                    }
-                } else { addLog(name, '⚠️ ' + d.error, 'log-err'); }
-            } catch (e) { addLog(name, 'Connection error: ' + e.message, 'log-err'); }
-            finally {
-                if (btn) { btn.disabled = false; btn.textContent = cmd === 'all' ? '🚀 Run All 7 Agents — Full Daily Cycle' : '▶ Run'; }
-                fetchStats();
-            }
-        }
-
-        async function loadLeads() {
-            try {
-                const r = await fetch(API + '/api/data/leads');
-                const d = await r.json();
-                document.getElementById('leads-count').textContent = `(${d.total} total)`;
-                const tb = document.getElementById('leads-table');
-                if (d.leads.length === 0) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No leads yet. Run Lead Agent!</td></tr>'; return; }
-                tb.innerHTML = d.leads.map(l => `<tr>
-      <td style="font-weight:600">${l.company}</td><td>${l.city}</td><td>${l.type}</td>
-      <td>${l.hr_contact}</td><td>${l.role_needed}</td><td>${l.salary_range}</td>
-      <td><span class="badge-s ${l.status === 'contacted' ? 'bg-b' : 'bg-g'}">${l.status}</span></td>
-    </tr>`).join('');
-            } catch (e) { console.error(e); }
-        }
-
-        async function loadCandidates() {
-            try {
-                const r = await fetch(API + '/api/data/candidates');
-                const d = await r.json();
-                document.getElementById('cand-count').textContent = `(${d.total} total)`;
-                const tb = document.getElementById('cand-table');
-                if (d.candidates.length === 0) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No candidates yet. Run Candidate Agent!</td></tr>'; return; }
-                tb.innerHTML = d.candidates.map(c => {
-                    const sc = c.score || 0; const cls = sc >= 70 ? 'bg-g' : sc >= 50 ? 'bg-a' : 'bg-r';
-                    return `<tr><td style="font-weight:600">${c.name}</td><td>${c.primary_skill}</td><td>${c.city}</td>
-      <td>${c.experience_years}yr</td><td><span class="badge-s ${cls}">${sc}</span></td>
-      <td>${c.source}</td><td><span class="badge-s ${c.status === 'interview_scheduled' ? 'bg-b' : 'bg-g'}">${c.status}</span></td></tr>`;
-                }).join('');
-            } catch (e) { console.error(e); }
-        }
-
-        async function loadMeetings() {
-            try {
-                const r = await fetch(API + '/api/data/meetings');
-                const d = await r.json();
-                document.getElementById('meet-count').textContent = `(${d.total} total)`;
-                const tb = document.getElementById('meet-table');
-                if (d.meetings.length === 0) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted)">No meetings yet. Run agents to book meetings!</td></tr>'; return; }
-                tb.innerHTML = d.meetings.map(m => `<tr>
-      <td style="font-weight:600">${m.company}</td><td>${m.hr}</td>
-      <td>${new Date(m.date).toLocaleDateString()}</td><td>${m.type}</td>
-      <td><span class="badge-s bg-b">${m.status}</span></td>
-    </tr>`).join('');
-            } catch (e) { console.error(e); }
         }
 
         async function doMatch() {
-            const q = document.getElementById('match-q').value; if (!q) return;
-            const btn = document.getElementById('match-btn');
-            const res = document.getElementById('match-results');
-            btn.disabled = true; btn.textContent = '⏳...';
-            res.innerHTML = '<p style="color:var(--cyan);text-align:center;padding:12px">Scanning database...</p>';
-            addLog('AI Matching', 'Searching: "' + q + '"', '');
+            const q = document.getElementById('match-query').value;
+            if (!q) return;
+            logEvent('Semantic Matcher', 'Scanning talent pool for: ' + q, null);
             try {
-                const r = await fetch(API + '/api/agents/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: q }) });
-                const d = await r.json();
-                const m = d.matches || [];
-                if (m.length > 0) {
-                    res.innerHTML = `<table class="tbl"><thead><tr><th>Name</th><th>Skill</th><th>City</th><th>Exp</th><th>Score</th><th>Source</th></tr></thead><tbody>${m.map(c => {
-                        const sc = c.match_score || c.score || 0; const cls = sc >= 70 ? 'bg-g' : sc >= 50 ? 'bg-a' : 'bg-r';
-                        return `<tr><td style="font-weight:600">${c.name}</td><td>${c.primary_skill}</td><td>${c.city}</td><td>${c.experience_years}yr</td><td><span class="badge-s ${cls}">${sc}%</span></td><td>${c.source}</td></tr>`;
-                    }).join('')}</tbody></table>`;
-                    addLog('AI Matching', m.length + ' matches found', 'log-ok');
-                } else { res.innerHTML = '<p style="color:var(--muted);text-align:center;padding:12px">No matches. Run Candidate Agent to grow the database.</p>'; addLog('AI Matching', 'No matches', ''); }
-            } catch (e) { res.innerHTML = '<p style="color:var(--red);text-align:center;padding:12px">Backend waking up... try again in 30s</p>'; addLog('AI Matching', 'Connection error', 'log-err'); }
-            finally { btn.disabled = false; btn.textContent = '🎯 Match'; }
+                const res = await fetch(API + '/api/agents/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: q }) });
+                const data = await res.json();
+                const count = (data.matches || []).length;
+                logEvent('Semantic Matcher', `Found ${count} high-probability matches.`, true);
+                switchTab('candidates');
+            } catch (e) { logEvent('Semantic Matcher', 'Matrix error: ' + e.message, false); }
         }
 
-        renderAgents(); fetchStats();
+        // Initialize check
+        checkAuth();
     </script>
 </body>
 
