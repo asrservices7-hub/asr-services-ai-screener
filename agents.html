@@ -705,6 +705,8 @@
             <div class="header-right">
                 <a href="index.html" class="header-link">Home</a>
                 <a href="dashboard.html" class="header-link">Screener</a>
+                <a href="revenue.html" class="header-link" style="color:var(--accent-gold);font-weight:700">Revenue
+                    Agent 💰</a>
                 <a href="payment.html" class="header-link">Plans</a>
                 <div class="status-pill online" id="server-status">
                     <div class="pulse-dot"></div>
@@ -749,7 +751,8 @@
         <!-- Live Candidate Intake UI -->
         <div class="upload-area" id="drop-zone">
             <div class="upload-icon">📄</div>
-            <div class="upload-text">Drag & drop candidate resumes here (PDF, DOCX) or <span>click to browse</span></div>
+            <div class="upload-text">Drag & drop candidate resumes here (PDF, DOCX) or <span>click to browse</span>
+            </div>
             <input type="file" id="fileInput" name="resume" accept=".pdf,.doc,.docx" style="display:none;" />
             <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Select File</button>
 
@@ -825,6 +828,7 @@
             { id: 'parser', name: 'Resume Parser', icon: '📄', desc: 'AI scoring — reads resumes, extracts fields, scores 0-100', cmd: 'parser' },
             { id: 'matching', name: 'AI Matching', icon: '🎯', desc: 'Match candidates to live job requirements', cmd: 'matching' },
             { id: 'scheduler', name: 'Interview Scheduler', icon: '🗓️', desc: 'Send interview invites & reminders via WhatsApp', cmd: 'scheduler' },
+            { id: 'revenue', name: 'Revenue Tracking', icon: '💰', desc: 'Calculate ROI, generate invoices, & collect payments', cmd: 'revenue' },
         ];
 
         // Render agents grid
@@ -1059,25 +1063,25 @@
                 method: 'POST',
                 body: formData
             })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                   progressBar.style.width = '100%';
-                   progressText.innerText = `Parse Complete. Score: ${data.score}/100`;
-                   addLog('Resume Parser', `Physically parsed ${file.name}. Raw text successfully extracted. Assigned base NLP score: ${data.score}/100. Candidate ingested into live Postgres.`, 'log-success');
-                   setTimeout(() => { progressArea.style.display = 'none'; }, 5000);
-                   fetchStats(); // Update dashboard
-                } else {
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        progressBar.style.width = '100%';
+                        progressText.innerText = `Parse Complete. Score: ${data.score}/100`;
+                        addLog('Resume Parser', `Physically parsed ${file.name}. Raw text successfully extracted. Assigned base NLP score: ${data.score}/100. Candidate ingested into live Postgres.`, 'log-success');
+                        setTimeout(() => { progressArea.style.display = 'none'; }, 5000);
+                        fetchStats(); // Update dashboard
+                    } else {
+                        progressBar.style.background = 'var(--accent-rose)';
+                        progressText.innerText = 'Upload Error.';
+                        addLog('Resume Parser', `Parse Error: ${data.error}`, 'log-error');
+                    }
+                })
+                .catch(err => {
                     progressBar.style.background = 'var(--accent-rose)';
-                    progressText.innerText = 'Upload Error.';
-                    addLog('Resume Parser', `Parse Error: ${data.error}`, 'log-error');
-                }
-            })
-            .catch(err => {
-                progressBar.style.background = 'var(--accent-rose)';
-                progressText.innerText = 'Server Error.';
-                addLog('Candidate Intake', `Network Error connecting to physical backend: ${err.message}`, 'log-error');
-            });
+                    progressText.innerText = 'Server Error.';
+                    addLog('Candidate Intake', `Network Error connecting to physical backend: ${err.message}`, 'log-error');
+                });
         }
 
         // Initialize

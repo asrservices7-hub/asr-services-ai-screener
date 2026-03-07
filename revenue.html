@@ -1,0 +1,2330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASR Revenue Agent</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    :root {
+      --bg: #080b0f;
+      --s1: #0e1318;
+      --s2: #141c23;
+      --s3: #1c2730;
+      --border: #1f2d38;
+      --border2: #263542;
+      --green: #00e676;
+      --green2: #00c853;
+      --gold: #ffd600;
+      --gold2: #ff8f00;
+      --red: #ff1744;
+      --blue: #40c4ff;
+      --purple: #b388ff;
+      --text: #e8f4f8;
+      --muted: #607d8b;
+      --muted2: #455a64;
+      --display: 'Bebas Neue', sans-serif;
+      --ui: 'Syne', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--ui);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid noise */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0, 230, 118, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 230, 118, 0.015) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(8, 11, 15, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+    }
+
+    .logo {
+      font-family: var(--display);
+      font-size: 1.6rem;
+      letter-spacing: 0.15em;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .logo-sub {
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      letter-spacing: 0.1em;
+      align-self: flex-end;
+      margin-bottom: 4px
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--green);
+      background: rgba(0, 230, 118, 0.08);
+      border: 1px solid rgba(0, 230, 118, 0.2);
+      padding: 0.25rem 0.7rem;
+      border-radius: 100px;
+    }
+
+    .pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 1.8s infinite
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(0.85)
+      }
+    }
+
+    .topbar-clock {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--muted)
+    }
+
+    /* ── NAV TABS ── */
+    .nav-tabs {
+      display: flex;
+      gap: 0;
+      background: var(--s1);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      position: sticky;
+      top: 58px;
+      z-index: 199;
+      overflow-x: auto;
+    }
+
+    .nav-tabs::-webkit-scrollbar {
+      height: 0
+    }
+
+    .tab {
+      padding: 0.85rem 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+
+    .tab:hover {
+      color: var(--text)
+    }
+
+    .tab.active {
+      color: var(--green);
+      border-bottom-color: var(--green)
+    }
+
+    /* ── PAGES ── */
+    .page {
+      display: none;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1
+    }
+
+    .page.active {
+      display: block
+    }
+
+    /* ── BIG REVENUE NUMBER ── */
+    .revenue-hero {
+      background: linear-gradient(135deg, rgba(0, 230, 118, 0.08) 0%, rgba(0, 230, 118, 0.02) 100%);
+      border: 1px solid rgba(0, 230, 118, 0.2);
+      border-radius: 16px;
+      padding: 2.5rem 3rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .revenue-hero::before {
+      content: '₹';
+      position: absolute;
+      right: -0.5rem;
+      top: -1rem;
+      font-family: var(--display);
+      font-size: 12rem;
+      color: rgba(0, 230, 118, 0.03);
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .revenue-main-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.5rem
+    }
+
+    .revenue-main-value {
+      font-family: var(--display);
+      font-size: 5rem;
+      letter-spacing: 0.04em;
+      color: var(--green);
+      line-height: 1
+    }
+
+    .revenue-main-value.counting {
+      animation: countUp 0.4s ease-out
+    }
+
+    @keyframes countUp {
+      from {
+        transform: translateY(6px);
+        opacity: 0.5
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1
+      }
+    }
+
+    .revenue-sub-stats {
+      display: flex;
+      gap: 3rem;
+      flex-wrap: wrap
+    }
+
+    .rsub {
+      text-align: right
+    }
+
+    .rsub-label {
+      font-size: 0.68rem;
+      color: var(--muted);
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em
+    }
+
+    .rsub-value {
+      font-family: var(--display);
+      font-size: 2.2rem;
+      letter-spacing: 0.06em;
+      color: var(--text)
+    }
+
+    .rsub-value.gold {
+      color: var(--gold)
+    }
+
+    .rsub-value.blue {
+      color: var(--blue)
+    }
+
+    /* ── KPI ROW ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem
+    }
+
+    .kpi {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem 1.4rem;
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: default;
+    }
+
+    .kpi:hover {
+      border-color: var(--border2);
+      transform: translateY(-2px)
+    }
+
+    .kpi-label {
+      font-size: 0.65rem;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 0.5rem
+    }
+
+    .kpi-val {
+      font-family: var(--display);
+      font-size: 2rem;
+      letter-spacing: 0.05em;
+      line-height: 1
+    }
+
+    .kpi-val.g {
+      color: var(--green)
+    }
+
+    .kpi-val.gold {
+      color: var(--gold)
+    }
+
+    .kpi-val.b {
+      color: var(--blue)
+    }
+
+    .kpi-val.r {
+      color: var(--red)
+    }
+
+    .kpi-sub {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+      font-family: var(--mono)
+    }
+
+    /* ── SECTION TITLE ── */
+    .sec {
+      font-family: var(--display);
+      font-size: 1.3rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      text-transform: uppercase
+    }
+
+    .sec span {
+      color: var(--green)
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.6rem;
+      margin-bottom: 1.5rem
+    }
+
+    .card h3 {
+      font-family: var(--display);
+      font-size: 1.15rem;
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem
+    }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border)
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    th {
+      background: var(--s1);
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      padding: 0.8rem 1rem;
+      text-align: left;
+      white-space: nowrap
+    }
+
+    td {
+      padding: 0.8rem 1rem;
+      font-size: 0.82rem;
+      border-top: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: middle
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02)
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.6rem;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em
+    }
+
+    .badge.paid {
+      background: rgba(0, 230, 118, 0.12);
+      color: var(--green);
+      border: 1px solid rgba(0, 230, 118, 0.25)
+    }
+
+    .badge.pending {
+      background: rgba(255, 214, 0, 0.1);
+      color: var(--gold);
+      border: 1px solid rgba(255, 214, 0, 0.25)
+    }
+
+    .badge.overdue {
+      background: rgba(255, 23, 68, 0.1);
+      color: var(--red);
+      border: 1px solid rgba(255, 23, 68, 0.2)
+    }
+
+    .badge.partial {
+      background: rgba(64, 196, 255, 0.1);
+      color: var(--blue);
+      border: 1px solid rgba(64, 196, 255, 0.2)
+    }
+
+    .badge.saas {
+      background: rgba(179, 136, 255, 0.1);
+      color: var(--purple);
+      border: 1px solid rgba(179, 136, 255, 0.2)
+    }
+
+    .badge.placement {
+      background: rgba(0, 230, 118, 0.1);
+      color: var(--green);
+      border: 1px solid rgba(0, 230, 118, 0.2)
+    }
+
+    .badge.retainer {
+      background: rgba(255, 214, 0, 0.1);
+      color: var(--gold);
+      border: 1px solid rgba(255, 214, 0, 0.2)
+    }
+
+    .mono-val {
+      font-family: var(--mono);
+      font-size: 0.8rem
+    }
+
+    .green-text {
+      color: var(--green)
+    }
+
+    .gold-text {
+      color: var(--gold)
+    }
+
+    .red-text {
+      color: var(--red)
+    }
+
+    /* ── FORMS ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.9rem
+    }
+
+    .fg {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem
+    }
+
+    .fg label {
+      font-size: 0.65rem;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted)
+    }
+
+    .fg input,
+    .fg select,
+    .fg textarea {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0.6rem 0.9rem;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .fg input:focus,
+    .fg select:focus,
+    .fg textarea:focus {
+      border-color: var(--green)
+    }
+
+    .fg select option {
+      background: var(--s2)
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.6rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: all 0.2s
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #000
+    }
+
+    .btn-green:hover {
+      background: var(--green2);
+      box-shadow: 0 4px 20px rgba(0, 230, 118, 0.4);
+      transform: translateY(-1px)
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: #000
+    }
+
+    .btn-gold:hover {
+      background: var(--gold2);
+      box-shadow: 0 4px 20px rgba(255, 214, 0, 0.4);
+      transform: translateY(-1px)
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted)
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--green);
+      color: var(--green)
+    }
+
+    .btn-red {
+      background: rgba(255, 23, 68, 0.1);
+      border: 1px solid rgba(255, 23, 68, 0.3);
+      color: var(--red)
+    }
+
+    .btn-red:hover {
+      background: rgba(255, 23, 68, 0.2)
+    }
+
+    .btn-sm {
+      padding: 0.35rem 0.9rem;
+      font-size: 0.68rem
+    }
+
+    .btn:active {
+      transform: translateY(0) !important
+    }
+
+    /* ── PAYMENT METHODS ── */
+    .payment-methods {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem
+    }
+
+    .pay-method {
+      background: var(--s3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .pay-method:hover,
+    .pay-method.selected {
+      border-color: var(--green);
+      background: rgba(0, 230, 118, 0.06)
+    }
+
+    .pay-method-icon {
+      font-size: 2rem
+    }
+
+    .pay-method-name {
+      font-family: var(--display);
+      font-size: 1.1rem;
+      letter-spacing: 0.08em
+    }
+
+    .pay-method-desc {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: var(--mono)
+    }
+
+    /* ── INVOICE PREVIEW ── */
+    .invoice-preview {
+      background: #fff;
+      color: #111;
+      border-radius: 12px;
+      padding: 2.5rem;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      display: none;
+      position: relative;
+    }
+
+    .invoice-preview.show {
+      display: block
+    }
+
+    .inv-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem
+    }
+
+    .inv-logo {
+      font-family: var(--display);
+      font-size: 2rem;
+      letter-spacing: 0.1em;
+      color: #1a1a2e
+    }
+
+    .inv-logo span {
+      color: #00c853
+    }
+
+    .inv-meta {
+      text-align: right;
+      font-size: 0.75rem;
+      line-height: 1.8;
+      color: #555
+    }
+
+    .inv-meta strong {
+      color: #111
+    }
+
+    .inv-divider {
+      height: 3px;
+      background: linear-gradient(90deg, #00c853, #ffd600);
+      border-radius: 2px;
+      margin: 1.5rem 0
+    }
+
+    .inv-parties {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem
+    }
+
+    .inv-party-label {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #888;
+      margin-bottom: 0.4rem
+    }
+
+    .inv-party-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #111;
+      margin-bottom: 0.2rem
+    }
+
+    .inv-items {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem
+    }
+
+    .inv-items th {
+      background: #f5f5f5;
+      padding: 0.7rem 1rem;
+      text-align: left;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #666;
+      border: 1px solid #eee
+    }
+
+    .inv-items td {
+      padding: 0.7rem 1rem;
+      border: 1px solid #eee;
+      font-size: 0.8rem
+    }
+
+    .inv-totals {
+      margin-left: auto;
+      width: 280px
+    }
+
+    .inv-total-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      font-size: 0.8rem;
+      color: #555
+    }
+
+    .inv-total-row.final {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #111;
+      border-top: 2px solid #111;
+      padding-top: 0.8rem;
+      margin-top: 0.4rem
+    }
+
+    .inv-footer {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #eee;
+      font-size: 0.7rem;
+      color: #888;
+      text-align: center
+    }
+
+    .inv-stamp {
+      position: absolute;
+      right: 3rem;
+      bottom: 5rem;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid rgba(0, 200, 83, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: rgba(0, 200, 83, 0.5);
+      text-align: center;
+      transform: rotate(-15deg);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── UPI PANEL ── */
+    .upi-panel {
+      background: var(--s3);
+      border: 1px solid rgba(0, 230, 118, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: none;
+    }
+
+    .upi-panel.show {
+      display: block
+    }
+
+    .upi-id-display {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      font-family: var(--mono);
+      font-size: 1rem;
+      color: var(--green);
+      letter-spacing: 0.05em;
+      margin: 1rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .qr-placeholder {
+      width: 160px;
+      height: 160px;
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-align: center;
+      margin: 0 auto 1rem;
+    }
+
+    .upi-apps {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 1rem
+    }
+
+    .upi-app {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-size: 0.75rem;
+      font-family: var(--mono);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .upi-app:hover {
+      border-color: var(--green);
+      color: var(--green)
+    }
+
+    /* ── CHART BARS ── */
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 80px;
+      margin: 1rem 0
+    }
+
+    .bc-bar {
+      background: rgba(0, 230, 118, 0.2);
+      border-radius: 3px 3px 0 0;
+      flex: 1;
+      min-width: 20px;
+      transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+      position: relative
+    }
+
+    .bc-bar:hover {
+      background: rgba(0, 230, 118, 0.5)
+    }
+
+    .bc-bar::after {
+      content: attr(data-val);
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--muted);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s
+    }
+
+    .bc-bar:hover::after {
+      opacity: 1
+    }
+
+    .bc-labels {
+      display: flex;
+      gap: 6px;
+      margin-top: 0.4rem
+    }
+
+    .bc-label {
+      flex: 1;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--muted)
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 9999;
+      background: var(--s2);
+      border: 1px solid var(--green);
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-width: 380px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1
+    }
+
+    .toast.error {
+      border-color: var(--red);
+      color: var(--red)
+    }
+
+    .toast.gold {
+      border-color: var(--gold);
+      color: var(--gold)
+    }
+
+    /* ── STREAM ── */
+    .stream {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      height: 200px;
+      overflow-y: auto;
+      padding: 1rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      line-height: 1.8;
+    }
+
+    .stream::-webkit-scrollbar {
+      width: 3px
+    }
+
+    .stream::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 2px
+    }
+
+    .sl {
+      color: var(--muted)
+    }
+
+    .sl.g {
+      color: var(--green)
+    }
+
+    .sl.gold {
+      color: var(--gold)
+    }
+
+    .sl.r {
+      color: var(--red)
+    }
+
+    .sl.b {
+      color: var(--blue)
+    }
+
+    /* ── SPLIT GRID ── */
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem
+    }
+
+    @media(max-width:900px) {
+      .split {
+        grid-template-columns: 1fr
+      }
+    }
+
+    /* ── PROGRESS ── */
+    .progress-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 0.5rem
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--green), var(--gold));
+      transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1)
+    }
+
+    /* ── REVENUE STREAM CARDS ── */
+    .stream-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem
+    }
+
+    .stream-card {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s
+    }
+
+    .stream-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-2px)
+    }
+
+    .stream-card-glow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px
+    }
+
+    .scg-green {
+      background: linear-gradient(90deg, var(--green), transparent)
+    }
+
+    .scg-gold {
+      background: linear-gradient(90deg, var(--gold), transparent)
+    }
+
+    .scg-blue {
+      background: linear-gradient(90deg, var(--blue), transparent)
+    }
+
+    .scg-purple {
+      background: linear-gradient(90deg, var(--purple), transparent)
+    }
+
+    .stream-card-name {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 0.5rem
+    }
+
+    .stream-card-val {
+      font-family: var(--display);
+      font-size: 2.4rem;
+      letter-spacing: 0.05em;
+      line-height: 1
+    }
+
+    .stream-card-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.4rem
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">
+      ASR
+      <div style="display:flex;flex-direction:column">
+        <span style="color:var(--text)">REVENUE AGENT</span>
+        <span class="logo-sub">END-TO-END PAYMENT ENGINE</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-badge">
+        <div class="pulse"></div>LIVE
+      </div>
+      <div class="topbar-clock" id="clock">--:--:--</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="nav-tabs">
+    <button class="tab active" onclick="showTab('overview')">💰 Overview</button>
+    <button class="tab" onclick="showTab('collect')">📥 Collect Payment</button>
+    <button class="tab" onclick="showTab('invoice')">🧾 Invoice Builder</button>
+    <button class="tab" onclick="showTab('transactions')">📊 Transactions</button>
+    <button class="tab" onclick="showTab('streams')">🔄 Revenue Streams</button>
+    <button class="tab" onclick="showTab('agent')">🤖 AI Agent</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- PAGE: OVERVIEW -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="page active" id="page-overview">
+
+    <div class="revenue-hero">
+      <div>
+        <div class="revenue-main-label">Total Revenue Earned — All Time</div>
+        <div class="revenue-main-value" id="heroRevenue">₹0</div>
+      </div>
+      <div class="revenue-sub-stats">
+        <div class="rsub">
+          <div class="rsub-label">This Month</div>
+          <div class="rsub-value gold" id="heroMonth">₹0</div>
+        </div>
+        <div class="rsub">
+          <div class="rsub-label">Pending</div>
+          <div class="rsub-value blue" id="heroPending">₹0</div>
+        </div>
+        <div class="rsub">
+          <div class="rsub-label">This Week</div>
+          <div class="rsub-value" id="heroWeek">₹0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">Placements</div>
+        <div class="kpi-val g" id="kpi-placements">0</div>
+        <div class="kpi-sub">total hires</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Invoices Raised</div>
+        <div class="kpi-val gold" id="kpi-invoices">0</div>
+        <div class="kpi-sub">all time</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Paid Invoices</div>
+        <div class="kpi-val g" id="kpi-paid">0</div>
+        <div class="kpi-sub">collected</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Pending</div>
+        <div class="kpi-val r" id="kpi-pending">0</div>
+        <div class="kpi-sub">awaiting payment</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">SaaS Revenue</div>
+        <div class="kpi-val b" id="kpi-saas">₹0</div>
+        <div class="kpi-sub">subscriptions</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Avg Fee/Hire</div>
+        <div class="kpi-val gold" id="kpi-avgfee">₹0</div>
+        <div class="kpi-sub">per placement</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Active Clients</div>
+        <div class="kpi-val g" id="kpi-clients">0</div>
+        <div class="kpi-sub">paying</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Collection Rate</div>
+        <div class="kpi-val g" id="kpi-collection">0%</div>
+        <div class="kpi-sub">paid vs raised</div>
+      </div>
+    </div>
+
+    <!-- Revenue streams -->
+    <div class="sec">Revenue <span>Streams</span></div>
+    <div class="stream-cards">
+      <div class="stream-card">
+        <div class="stream-card-glow scg-green"></div>
+        <div class="stream-card-name">Placement Fees</div>
+        <div class="stream-card-val" style="color:var(--green)" id="sc-placement">₹0</div>
+        <div class="stream-card-sub" id="sc-placement-sub">0 hires × ₹0 avg</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="sc-placement-bar" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="stream-card">
+        <div class="stream-card-glow scg-gold"></div>
+        <div class="stream-card-name">Retainer Contracts</div>
+        <div class="stream-card-val" style="color:var(--gold)" id="sc-retainer">₹0</div>
+        <div class="stream-card-sub" id="sc-retainer-sub">0 active contracts</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="sc-retainer-bar" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="stream-card">
+        <div class="stream-card-glow scg-blue"></div>
+        <div class="stream-card-name">SaaS Subscriptions</div>
+        <div class="stream-card-val" style="color:var(--blue)" id="sc-saas">₹0</div>
+        <div class="stream-card-sub" id="sc-saas-sub">0 active subscribers</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="sc-saas-bar" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="stream-card">
+        <div class="stream-card-glow scg-purple"></div>
+        <div class="stream-card-name">Consulting / Other</div>
+        <div class="stream-card-val" style="color:var(--purple)" id="sc-other">₹0</div>
+        <div class="stream-card-sub" id="sc-other-sub">0 projects</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="sc-other-bar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly bar chart -->
+    <div class="card">
+      <h3>Monthly Revenue Trend</h3>
+      <div class="bar-chart" id="barChart"></div>
+      <div class="bc-labels" id="barLabels"></div>
+    </div>
+
+    <!-- Recent transactions -->
+    <div class="sec">Recent <span>Activity</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Client</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="recentTable">
+          <tr>
+            <td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">No transactions yet. Record a
+              payment to begin.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- PAGE: COLLECT PAYMENT -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="page" id="page-collect">
+    <div class="sec">Collect <span>Payment</span></div>
+
+    <!-- Method selector -->
+    <div class="payment-methods">
+      <div class="pay-method selected" id="pm-razorpay" onclick="selectMethod('razorpay')">
+        <div class="pay-method-icon">⚡</div>
+        <div class="pay-method-name">RAZORPAY</div>
+        <div class="pay-method-desc">Cards, UPI, NetBanking, Wallets. Instant settlement. 2% fee.</div>
+      </div>
+      <div class="pay-method" id="pm-upi" onclick="selectMethod('upi')">
+        <div class="pay-method-icon">📱</div>
+        <div class="pay-method-name">UPI DIRECT</div>
+        <div class="pay-method-desc">Share UPI ID or QR code. Zero fee. Manual confirmation.</div>
+      </div>
+      <div class="pay-method" id="pm-bank" onclick="selectMethod('bank')">
+        <div class="pay-method-icon">🏦</div>
+        <div class="pay-method-name">BANK TRANSFER</div>
+        <div class="pay-method-desc">NEFT/RTGS/IMPS. For large payments. Zero fee.</div>
+      </div>
+      <div class="pay-method" id="pm-manual" onclick="selectMethod('manual')">
+        <div class="pay-method-icon">✏️</div>
+        <div class="pay-method-name">MANUAL RECORD</div>
+        <div class="pay-method-desc">Cash / Cheque / Already received. Record it here.</div>
+      </div>
+    </div>
+
+    <!-- Payment form -->
+    <div class="card">
+      <h3 id="collect-title">⚡ Razorpay — Collect Online Payment</h3>
+      <div class="form-grid" style="margin-bottom:1.2rem">
+        <div class="fg"><label>Client Name</label><input id="pay-client" type="text"
+            placeholder="Teleperformance India"></div>
+        <div class="fg"><label>Client Email</label><input id="pay-email" type="email"
+            placeholder="hr@teleperformance.com"></div>
+        <div class="fg"><label>Client Phone</label><input id="pay-phone" type="tel" placeholder="9876543210"></div>
+        <div class="fg"><label>Amount (₹)</label><input id="pay-amount" type="number" placeholder="80000" min="1"></div>
+        <div class="fg"><label>Payment Type</label>
+          <select id="pay-type">
+            <option value="placement">Placement Fee</option>
+            <option value="retainer">Retainer Contract</option>
+            <option value="saas">SaaS Subscription</option>
+            <option value="other">Consulting / Other</option>
+          </select>
+        </div>
+        <div class="fg"><label>Description</label><input id="pay-desc" type="text"
+            placeholder="10 BPO hires @ ₹8,000 each"></div>
+        <div class="fg"><label>Invoice Number</label><input id="pay-inv" type="text" placeholder="ASR-202603-001"></div>
+        <div class="fg"><label>Notes</label><input id="pay-notes" type="text" placeholder="Optional notes"></div>
+      </div>
+      <div style="display:flex;gap:0.8rem;flex-wrap:wrap">
+        <button class="btn btn-green" id="btnCollect" onclick="collectPayment()">⚡ COLLECT NOW</button>
+        <button class="btn btn-ghost" onclick="generatePayLink()">🔗 Generate Payment Link</button>
+      </div>
+      <div id="paylink-result" style="margin-top:1rem;display:none">
+        <div class="fg"><label>Payment Link (share with client)</label>
+          <div style="display:flex;gap:0.5rem">
+            <input id="paylink-url" type="text" readonly style="flex:1">
+            <button class="btn btn-ghost btn-sm" onclick="copyPayLink()">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPI Panel -->
+    <div class="upi-panel" id="upiPanel">
+      <h3 style="font-family:var(--display);font-size:1.1rem;letter-spacing:0.08em;margin-bottom:0.5rem">📱 UPI Payment
+        Details</h3>
+      <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem">Share your UPI ID or QR code with the client.
+        After they pay, confirm it below.</p>
+      <div class="upi-id-display">
+        <span id="upiIdDisplay">asrecruitment@upi</span>
+        <button class="btn btn-ghost btn-sm" onclick="copyUPI()">Copy</button>
+      </div>
+      <div class="upi-apps">
+        <div class="upi-app">Google Pay</div>
+        <div class="upi-app">PhonePe</div>
+        <div class="upi-app">Paytm</div>
+        <div class="upi-app">BHIM</div>
+      </div>
+      <div style="display:flex;gap:0.8rem;align-items:center;flex-wrap:wrap">
+        <div class="fg" style="flex:1"><label>UTR / Reference Number</label><input id="utr-num" type="text"
+            placeholder="After client pays, enter UTR here"></div>
+        <button class="btn btn-green" style="margin-top:1.2rem" onclick="confirmUPI()">✓ Confirm Payment</button>
+      </div>
+    </div>
+
+    <!-- Bank Panel -->
+    <div id="bankPanel" style="display:none">
+      <div class="card">
+        <h3>🏦 Bank Transfer Details</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-bottom:1rem">
+          <div class="fg"><label>Account Name</label><input value="AS Recruitment Services" readonly></div>
+          <div class="fg"><label>Account Number</label><input id="bankAcc" value="XXXXXXXXXXXX" readonly></div>
+          <div class="fg"><label>IFSC Code</label><input id="bankIFSC" value="SBIN0XXXXXX" readonly></div>
+          <div class="fg"><label>Bank Name</label><input id="bankName" value="State Bank of India" readonly></div>
+        </div>
+        <p style="font-size:0.75rem;color:var(--muted);font-family:var(--mono)">Update account details in Settings.
+          After client transfers, confirm payment below.</p>
+        <div style="display:flex;gap:0.8rem;align-items:flex-end;margin-top:1rem;flex-wrap:wrap">
+          <div class="fg" style="flex:1"><label>Transaction Reference</label><input id="bank-ref" type="text"
+              placeholder="Transaction ID / UTR from bank statement"></div>
+          <button class="btn btn-green" onclick="confirmBank()">✓ Confirm Transfer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- PAGE: INVOICE BUILDER -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="page" id="page-invoice">
+    <div class="sec">Invoice <span>Builder</span></div>
+    <div class="split">
+      <div>
+        <div class="card">
+          <h3>Invoice Details</h3>
+          <div class="form-grid" style="margin-bottom:1rem">
+            <div class="fg" style="grid-column:span 2"><label>Invoice Number</label><input id="inv-num" value=""
+                placeholder="Auto-generated"></div>
+            <div class="fg"><label>Your Company</label><input id="inv-from" value="AS Recruitment Services"></div>
+            <div class="fg"><label>Your Address</label><input id="inv-from-addr" placeholder="Lucknow, UP"></div>
+            <div class="fg"><label>Your Email</label><input id="inv-from-email" value="srijan@asrecruitment.in"></div>
+            <div class="fg"><label>Your Phone</label><input id="inv-from-phone" value="+91-XXXXXXXXXX"></div>
+            <div class="fg" style="grid-column:span 2;height:2px;background:var(--border);margin:0.3rem 0"></div>
+            <div class="fg"><label>Client Company</label><input id="inv-to" placeholder="Teleperformance India"></div>
+            <div class="fg"><label>Client Contact</label><input id="inv-to-contact" placeholder="HR Manager Name"></div>
+            <div class="fg"><label>Client Email</label><input id="inv-to-email" placeholder="hr@client.com"></div>
+            <div class="fg"><label>Client Address</label><input id="inv-to-addr" placeholder="Noida, UP"></div>
+            <div class="fg"><label>Invoice Date</label><input id="inv-date" type="date"></div>
+            <div class="fg"><label>Due Date</label><input id="inv-due" type="date"></div>
+          </div>
+
+          <div id="inv-items-list">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem">
+              <span
+                style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em">Line
+                Items</span>
+              <button class="btn btn-ghost btn-sm" onclick="addInvItem()">+ Add Item</button>
+            </div>
+            <div id="inv-lines"></div>
+          </div>
+
+          <div style="display:flex;gap:0.8rem;margin-top:1.2rem;flex-wrap:wrap">
+            <div class="fg"><label>GST %</label><input id="inv-gst" type="number" value="18" style="width:80px"></div>
+            <div class="fg"><label>Discount (₹)</label><input id="inv-discount" type="number" value="0"
+                style="width:100px"></div>
+            <div class="fg"><label>Notes / Terms</label><input id="inv-terms"
+                value="Payment due within 15 days. 30-day replacement guarantee." style="min-width:200px"></div>
+          </div>
+
+          <div style="display:flex;gap:0.8rem;margin-top:1.2rem;flex-wrap:wrap">
+            <button class="btn btn-green" onclick="previewInvoice()">👁 Preview Invoice</button>
+            <button class="btn btn-gold" onclick="saveAndRecord()">💾 Save & Record</button>
+            <button class="btn btn-ghost" onclick="printInvoice()">🖨 Print / Download</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="invoice-preview" id="invoicePreview">
+          <!-- Filled by JS -->
+        </div>
+        <div id="invPlaceholder" class="card" style="text-align:center;padding:4rem 2rem;color:var(--muted)">
+          <div style="font-size:3rem;margin-bottom:1rem">🧾</div>
+          <div style="font-family:var(--mono);font-size:0.8rem">Fill in the form and click Preview Invoice to see the
+            live preview here</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- PAGE: TRANSACTIONS -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="page" id="page-transactions">
+    <div
+      style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+      <div class="sec" style="margin:0">All <span>Transactions</span></div>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
+        <select class="fg" id="filter-type" onchange="renderTransactions()"
+          style="padding:0.5rem 0.9rem;background:var(--s2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:0.75rem;outline:none">
+          <option value="">All Types</option>
+          <option value="placement">Placement</option>
+          <option value="retainer">Retainer</option>
+          <option value="saas">SaaS</option>
+          <option value="other">Other</option>
+        </select>
+        <select class="fg" id="filter-status" onchange="renderTransactions()"
+          style="padding:0.5rem 0.9rem;background:var(--s2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--mono);font-size:0.75rem;outline:none">
+          <option value="">All Status</option>
+          <option value="paid">Paid</option>
+          <option value="pending">Pending</option>
+          <option value="overdue">Overdue</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Invoice</th>
+            <th>Type</th>
+            <th>Client</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>GST</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Method</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="allTransTable">
+          <tr>
+            <td colspan="11" style="text-align:center;color:var(--muted);padding:2rem">No transactions recorded yet.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Summary row -->
+    <div class="kpi-grid" style="margin-top:1.5rem" id="txnSummary"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- PAGE: REVENUE STREAMS -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="page" id="page-streams">
+    <div class="sec">Revenue <span>Streams Setup</span></div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:2rem;font-family:var(--mono)">Configure all ASR revenue
+      sources. Each stream tracks independently.</p>
+
+    <!-- Quick add placement -->
+    <div class="card">
+      <h3>🎯 Record New Placement</h3>
+      <div class="form-grid" style="margin-bottom:1rem">
+        <div class="fg"><label>Client Company</label><input id="pl-client" placeholder="Teleperformance"></div>
+        <div class="fg"><label>Candidate Name</label><input id="pl-cand" placeholder="Priya Verma"></div>
+        <div class="fg"><label>Role</label><input id="pl-role" placeholder="Customer Support Executive"></div>
+        <div class="fg"><label>Candidate Salary (₹/mo)</label><input id="pl-salary" type="number" placeholder="16000">
+        </div>
+        <div class="fg"><label>Placement Fee (₹)</label><input id="pl-fee" type="number" placeholder="8000"
+            value="8000"></div>
+        <div class="fg"><label>Joining Date</label><input id="pl-date" type="date"></div>
+        <div class="fg"><label>City</label><input id="pl-city" placeholder="Lucknow"></div>
+        <div class="fg"><label>Notes</label><input id="pl-notes" placeholder="Optional"></div>
+      </div>
+      <button class="btn btn-green" onclick="recordPlacement()">+ Record Placement</button>
+    </div>
+
+    <!-- Quick add subscription -->
+    <div class="card">
+      <h3>💳 Record SaaS Subscription</h3>
+      <div class="form-grid" style="margin-bottom:1rem">
+        <div class="fg"><label>Company</label><input id="sub-client" placeholder="Client Company"></div>
+        <div class="fg"><label>Plan</label>
+          <select id="sub-plan">
+            <option value="starter">Starter — ₹5,000/mo</option>
+            <option value="growth">Growth — ₹15,000/mo</option>
+            <option value="enterprise">Enterprise — ₹50,000/mo</option>
+            <option value="custom">Custom Amount</option>
+          </select>
+        </div>
+        <div class="fg"><label>Custom Amount (₹)</label><input id="sub-amount" type="number" placeholder="5000"></div>
+        <div class="fg"><label>Billing Cycle</label>
+          <select id="sub-cycle">
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="annual">Annual</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-green" onclick="recordSubscription()">+ Record Subscription</button>
+    </div>
+
+    <!-- Retainer -->
+    <div class="card">
+      <h3>📋 Record Retainer Contract</h3>
+      <div class="form-grid" style="margin-bottom:1rem">
+        <div class="fg"><label>Client Company</label><input id="ret-client" placeholder="Company Name"></div>
+        <div class="fg"><label>Monthly Retainer (₹)</label><input id="ret-amount" type="number" placeholder="25000">
+        </div>
+        <div class="fg"><label>Contract Duration</label><input id="ret-duration" placeholder="3 months / 6 months">
+        </div>
+        <div class="fg"><label>Start Date</label><input id="ret-start" type="date"></div>
+        <div class="fg"><label>Hiring Volume Commitment</label><input id="ret-volume" placeholder="20 hires/month">
+        </div>
+        <div class="fg"><label>Notes</label><input id="ret-notes" placeholder="Optional"></div>
+      </div>
+      <button class="btn btn-green" onclick="recordRetainer()">+ Record Retainer</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- PAGE: AI AGENT -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="page" id="page-agent">
+    <div class="sec">AI Revenue <span>Agent</span></div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:2rem;max-width:600px">
+      The agent analyses your revenue data, identifies patterns, flags overdue payments,
+      recommends pricing, and tells you exactly what to do next to maximise cash flow.
+    </p>
+
+    <div class="split">
+      <div>
+        <div class="card">
+          <h3>🤖 Ask the Revenue Agent</h3>
+          <div class="fg" style="margin-bottom:0.8rem">
+            <label>Your Question</label>
+            <textarea id="agent-q" rows="4"
+              placeholder="e.g. Which clients owe me money? What should my pricing be? How can I hit ₹5L this month? Which revenue stream is growing fastest?"
+              style="background:var(--s1);border:1px solid var(--border);border-radius:7px;padding:0.8rem;color:var(--text);font-family:var(--mono);font-size:0.8rem;outline:none;width:100%;resize:vertical;transition:border-color 0.2s"></textarea>
+          </div>
+          <div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1rem">
+            <button class="btn btn-green" onclick="askAgent()">▶ Ask Agent</button>
+            <button class="btn btn-ghost btn-sm"
+              onclick="quickQuestion('What is my total revenue and how much is pending collection?')">💰 Revenue
+              Summary</button>
+            <button class="btn btn-ghost btn-sm"
+              onclick="quickQuestion('Which invoices are overdue? Who should I follow up with?')">⚠ Overdue</button>
+            <button class="btn btn-ghost btn-sm"
+              onclick="quickQuestion('What actions should I take this week to maximise revenue?')">📋 This Week</button>
+            <button class="btn btn-ghost btn-sm"
+              onclick="quickQuestion('Analyse my revenue streams and tell me which to focus on.')">📊 Analyse
+              Streams</button>
+          </div>
+          <div class="stream" id="agentStream"><span class="sl">Revenue Agent ready. Ask anything about your payments,
+              invoices, or cash flow.</span></div>
+        </div>
+
+        <div class="card">
+          <h3>⚙️ Razorpay / UPI Settings</h3>
+          <div class="form-grid" style="margin-bottom:1rem">
+            <div class="fg"><label>Razorpay Key ID</label><input id="rzp-key" type="text"
+                placeholder="rzp_test_XXXXXXXXXXXX"></div>
+            <div class="fg"><label>Business Name</label><input id="rzp-name" value="AS Recruitment Services"></div>
+            <div class="fg"><label>UPI ID</label><input id="upi-id-setting" value="asrecruitment@upi"></div>
+            <div class="fg"><label>Bank Account No.</label><input id="bank-acc-setting" placeholder="XXXXXXXXXXXX">
+            </div>
+            <div class="fg"><label>IFSC Code</label><input id="bank-ifsc-setting" placeholder="SBIN0XXXXXX"></div>
+            <div class="fg"><label>GST Number</label><input id="gst-num" placeholder="22AAAAA0000A1Z5"></div>
+          </div>
+          <button class="btn btn-green" onclick="saveSettings()">Save Settings</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <h3>📊 Auto-Generated Insights</h3>
+          <div id="insights-list" style="display:flex;flex-direction:column;gap:0.8rem">
+            <div style="font-size:0.78rem;color:var(--muted);font-family:var(--mono)">Insights appear after you record
+              transactions.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>📅 Payment Calendar — Next 30 Days</h3>
+          <div id="payment-calendar" style="display:flex;flex-direction:column;gap:0.6rem">
+            <div style="font-size:0.78rem;color:var(--muted);font-family:var(--mono)">No upcoming payments scheduled.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <span id="toast-icon">✓</span>
+    <span id="toast-msg">Done</span>
+  </div>
+
+  <script>
+    // ══════════════════════════════════════════════════
+    //  LIVE PRODUCTION DATA STORE (Render + Supabase)
+    // ══════════════════════════════════════════════════
+    const API = 'https://asr-services-ai-screener.onrender.com';
+    let data = { transactions: [], settings: {}, invCounter: 1 };
+
+    async function loadData() {
+      try {
+        const res = await fetch(`${API}/api/revenue/transactions`);
+        if (res.ok) {
+          data.transactions = await res.json();
+          data.invCounter = data.transactions.length + 1;
+        }
+      } catch (e) { console.error('Error loading live data', e); }
+
+      // Settings still local for now, could be moved to profiles table later
+      data.settings = JSON.parse(localStorage.getItem('asr_rev_settings') || '{}');
+    }
+
+    function newInvoiceNum() {
+      const n = `ASR-${new Date().toISOString().slice(0, 7).replace('-', '')}-${String(data.invCounter).padStart(3, '0')}`;
+      data.invCounter++;
+      return n;
+    }
+
+    // ── Settings ──────────────────────────────────────
+    const S = () => data.settings || {};
+    function saveSettings() {
+      data.settings = {
+        rzpKey: document.getElementById('rzp-key').value,
+        bizName: document.getElementById('rzp-name').value,
+        upiId: document.getElementById('upi-id-setting').value,
+        bankAcc: document.getElementById('bank-acc-setting').value,
+        bankIFSC: document.getElementById('bank-ifsc-setting').value,
+        gstNum: document.getElementById('gst-num').value,
+      };
+      localStorage.setItem('asr_rev_settings', JSON.stringify(data.settings));
+      document.getElementById('upiIdDisplay').textContent = data.settings.upiId || 'asrecruitment@upi';
+      if (data.settings.bankAcc) document.getElementById('bankAcc').value = data.settings.bankAcc;
+      if (data.settings.bankIFSC) document.getElementById('bankIFSC').value = data.settings.bankIFSC;
+      toast('Settings saved ✓');
+    }
+    function loadSettings() {
+      const s = S();
+      if (s.rzpKey) document.getElementById('rzp-key').value = s.rzpKey;
+      if (s.bizName) document.getElementById('rzp-name').value = s.bizName;
+      if (s.upiId) { document.getElementById('upi-id-setting').value = s.upiId; document.getElementById('upiIdDisplay').textContent = s.upiId; }
+      if (s.bankAcc) { document.getElementById('bank-acc-setting').value = s.bankAcc; document.getElementById('bankAcc').value = s.bankAcc; }
+      if (s.bankIFSC) { document.getElementById('bank-ifsc-setting').value = s.bankIFSC; document.getElementById('bankIFSC').value = s.bankIFSC; }
+      if (s.gstNum) document.getElementById('gst-num').value = s.gstNum;
+    }
+
+    // ══════════════════════════════════════════════════
+    //  TABS & CLOCK
+    // ══════════════════════════════════════════════════
+    function showTab(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('page-' + id).classList.add('active');
+      event.target.classList.add('active');
+      if (id === 'overview') updateOverview();
+      if (id === 'transactions') renderTransactions();
+      if (id === 'agent') updateInsights();
+    }
+    setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-IN', { hour12: false }); }, 1000);
+
+    // ══════════════════════════════════════════════════
+    //  PAYMENT METHODS
+    // ══════════════════════════════════════════════════
+    let currentMethod = 'razorpay';
+    function selectMethod(m) {
+      currentMethod = m;
+      document.querySelectorAll('.pay-method').forEach(el => el.classList.remove('selected'));
+      document.getElementById('pm-' + m).classList.add('selected');
+      document.getElementById('upiPanel').classList.remove('show');
+      document.getElementById('bankPanel').style.display = 'none';
+      const titles = { razorpay: '⚡ Razorpay — Collect Online Payment', upi: '📱 UPI Direct Payment', bank: '🏦 Bank Transfer', manual: '✏️ Record Manual Payment' };
+      document.getElementById('collect-title').textContent = titles[m];
+      if (m === 'upi') document.getElementById('upiPanel').classList.add('show');
+      if (m === 'bank') document.getElementById('bankPanel').style.display = 'block';
+      const btnLabels = { razorpay: '⚡ COLLECT NOW', upi: 'Show UPI Details', bank: 'Show Bank Details', manual: '+ Record Payment' };
+      document.getElementById('btnCollect').textContent = btnLabels[m];
+    }
+
+    // ── Razorpay ──────────────────────────────────────
+    function collectPayment() {
+      const amt = parseInt(document.getElementById('pay-amount').value);
+      const client = document.getElementById('pay-client').value;
+      const email = document.getElementById('pay-email').value;
+      const phone = document.getElementById('pay-phone').value;
+      const desc = document.getElementById('pay-desc').value;
+      const type = document.getElementById('pay-type').value;
+
+      if (!amt || amt < 1) { toast('Enter a valid amount', 'error'); return; }
+      if (!client) { toast('Enter client name', 'error'); return; }
+
+      if (currentMethod === 'manual') {
+        recordTransaction({ client, email, amount: amt, type, desc, method: 'Manual', status: 'paid', notes: document.getElementById('pay-notes').value });
+        toast(`₹${fmt(amt)} recorded as received ✓`, 'gold');
+        clearPayForm(); return;
+      }
+
+      const key = S().rzpKey || 'rzp_test_placeholder';
+      if (key === 'rzp_test_placeholder' || !key.startsWith('rzp_')) {
+        // Demo mode — simulate payment
+        setTimeout(() => {
+          recordTransaction({ client, email, amount: amt, type, desc, method: 'Razorpay', status: 'paid', txnId: 'RZP_DEMO_' + Date.now(), notes: document.getElementById('pay-notes').value });
+          toast(`₹${fmt(amt)} payment successful (demo) ✓`, 'gold');
+          clearPayForm();
+        }, 1200);
+        toast('Demo mode — add Razorpay Key in Settings for live payments');
+        return;
+      }
+
+      const options = {
+        key,
+        amount: amt * 100,
+        currency: 'INR',
+        name: S().bizName || 'AS Recruitment',
+        description: desc || 'Recruitment Service Payment',
+        prefill: { name: client, email, contact: phone },
+        theme: { color: '#00e676' },
+        handler: function (res) {
+          recordTransaction({ client, email, amount: amt, type, desc, method: 'Razorpay', status: 'paid', txnId: res.razorpay_payment_id });
+          toast(`₹${fmt(amt)} payment received! ID: ${res.razorpay_payment_id}`, 'gold');
+          clearPayForm();
+        },
+        modal: { ondismiss: () => toast('Payment cancelled', 'error') }
+      };
+      new Razorpay(options).open();
+    }
+
+    function generatePayLink() {
+      const amt = document.getElementById('pay-amount').value;
+      const client = document.getElementById('pay-client').value;
+      if (!amt || !client) { toast('Fill in client and amount first', 'error'); return; }
+      // In production: call Razorpay Payment Links API
+      const link = `upi://pay?pa=${S().upiId || 'asrecruitment@upi'}&pn=ASRecruitment&am=${amt}&cu=INR&tn=${encodeURIComponent('ASR-' + client)}`;
+      document.getElementById('paylink-url').value = link;
+      document.getElementById('paylink-result').style.display = 'block';
+      toast('Payment link generated');
+    }
+    function copyPayLink() { navigator.clipboard.writeText(document.getElementById('paylink-url').value); toast('Link copied!'); }
+    function copyUPI() { navigator.clipboard.writeText(document.getElementById('upiIdDisplay').textContent); toast('UPI ID copied!'); }
+
+    function confirmUPI() {
+      const utr = document.getElementById('utr-num').value.trim();
+      const amt = parseInt(document.getElementById('pay-amount').value);
+      const client = document.getElementById('pay-client').value;
+      if (!utr) { toast('Enter UTR number first', 'error'); return; }
+      if (!amt || !client) { toast('Fill in client and amount', 'error'); return; }
+      recordTransaction({ client, amount: amt, type: document.getElementById('pay-type').value, desc: document.getElementById('pay-desc').value, method: 'UPI', status: 'paid', txnId: utr });
+      toast(`₹${fmt(amt)} UPI payment confirmed ✓`, 'gold');
+      clearPayForm();
+    }
+    function confirmBank() {
+      const ref = document.getElementById('bank-ref').value.trim();
+      const amt = parseInt(document.getElementById('pay-amount').value);
+      const client = document.getElementById('pay-client').value;
+      if (!ref) { toast('Enter transaction reference', 'error'); return; }
+      recordTransaction({ client, amount: amt, type: document.getElementById('pay-type').value, desc: document.getElementById('pay-desc').value, method: 'Bank Transfer', status: 'paid', txnId: ref });
+      toast(`₹${fmt(amt)} bank transfer confirmed ✓`, 'gold');
+      clearPayForm();
+    }
+    function clearPayForm() {
+      ['pay-client', 'pay-email', 'pay-phone', 'pay-amount', 'pay-desc', 'pay-inv', 'pay-notes', 'utr-num', 'bank-ref'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    }
+
+    // ══════════════════════════════════════════════════
+    //  TRANSACTIONS (LIVE SYNC)
+    // ══════════════════════════════════════════════════
+    async function recordTransaction(tx) {
+      const inv = tx.invoiceNum || newInvoiceNum();
+      const gstPct = parseFloat(document.getElementById('inv-gst')?.value) || 18;
+      const discount = parseInt(document.getElementById('inv-discount')?.value) || 0;
+
+      const payload = {
+        invoice_num: inv,
+        client_name: tx.client || '',
+        client_email: tx.email || null,
+        amount: tx.amount || 0,
+        type: tx.type || 'placement',
+        description: tx.desc || '',
+        status: tx.status || 'pending',
+        method: tx.method || 'Manual',
+        notes: tx.notes || '',
+        gst_pct: gstPct,
+        discount: discount
+      };
+
+      try {
+        const res = await fetch(`${API}/api/revenue/add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          toast('Syncing with Production DB...', 'info');
+          await loadData(); // refresh
+          updateOverview();
+          renderTransactions();
+          updateInsights();
+        } else {
+          toast('Failed to save to cloud', 'error');
+        }
+      } catch (e) {
+        toast('Network error connecting to DB', 'error');
+      }
+    }
+
+    async function markPaid(id) {
+      try {
+        const res = await fetch(`${API}/api/revenue/update/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'paid', paid_at: new Date().toISOString() })
+        });
+        if (res.ok) {
+          toast('Marked as paid ✓');
+          await loadData();
+          renderTransactions();
+          updateOverview();
+        }
+      } catch (e) { toast('Error updating cloud', 'error'); }
+    }
+
+    function deleteTxn(id) {
+      toast('Admin action required to delete physical records', 'error');
+    }
+
+    function renderTransactions() {
+      const filterType = document.getElementById('filter-type')?.value || '';
+      const filterStatus = document.getElementById('filter-status')?.value || '';
+      let txns = data.transactions.filter(t =>
+        (!filterType || t.type === filterType) &&
+        (!filterStatus || t.status === filterStatus)
+      );
+
+      const body = document.getElementById('allTransTable');
+      if (!body) return;
+      if (!txns.length) {
+        body.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:2rem">No transactions found.</td></tr>';
+        return;
+      }
+      body.innerHTML = txns.map(t => `
+    <tr>
+      <td class="mono-val">${new Date(t.created_at).toISOString().slice(0, 10)}</td>
+      <td class="mono-val" style="color:var(--blue)">${t.invoice_num}</td>
+      <td><span class="badge ${t.type}">${t.type}</span></td>
+      <td>${t.client_name}</td>
+      <td style="color:var(--muted);font-size:0.78rem;max-width:180px;overflow:hidden;text-overflow:ellipsis">${t.description || '—'}</td>
+      <td class="mono-val">₹${fmt(t.amount)}</td>
+      <td class="mono-val" style="color:var(--muted)">₹${fmt(Math.round(t.amount * (t.gst_pct / 100)))}</td>
+      <td class="mono-val green-text">₹${fmt(t.amount + Math.round(t.amount * (t.gst_pct / 100)) - (t.discount || 0))}</td>
+      <td><span class="badge ${t.status}">${t.status}</span></td>
+      <td class="mono-val" style="font-size:0.68rem;color:var(--muted)">${t.method}</td>
+      <td>
+        <div style="display:flex;gap:0.4rem">
+          ${t.status !== 'paid' ? `<button class="btn btn-ghost btn-sm" onclick="markPaid('${t.id}')">✓ Paid</button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+      // Summary
+      const calcTotal = (tx) => tx.amount + Math.round(tx.amount * (tx.gst_pct / 100)) - (tx.discount || 0);
+      const total = txns.reduce((a, t) => a + calcTotal(t), 0);
+      const paid = txns.filter(t => t.status === 'paid').reduce((a, t) => a + calcTotal(t), 0);
+      const pending = txns.filter(t => t.status === 'pending' || t.status === 'overdue').reduce((a, t) => a + t.total, 0);
+      const sum = document.getElementById('txnSummary');
+      if (sum) sum.innerHTML = `
+    <div class="kpi"><div class="kpi-label">Filtered Total</div><div class="kpi-val gold">₹${fmt(total)}</div></div>
+    <div class="kpi"><div class="kpi-label">Collected</div><div class="kpi-val g">₹${fmt(paid)}</div></div>
+    <div class="kpi"><div class="kpi-label">Outstanding</div><div class="kpi-val r">₹${fmt(pending)}</div></div>
+    <div class="kpi"><div class="kpi-label">Transactions</div><div class="kpi-val b">${txns.length}</div></div>
+  `;
+    }
+
+    // ══════════════════════════════════════════════════
+    //  OVERVIEW
+    // ══════════════════════════════════════════════════
+    function updateOverview() {
+      const calcTotal = (tx) => Number(tx.amount) + Math.round(Number(tx.amount) * (Number(tx.gst_pct) / 100)) - Number(tx.discount || 0);
+      const txns = data.transactions;
+      const paid = txns.filter(t => t.status === 'paid');
+      const pending = txns.filter(t => t.status === 'pending' || t.status === 'overdue' || t.status === 'partial');
+      const total = paid.reduce((a, t) => a + calcTotal(t), 0);
+      const pend = pending.reduce((a, t) => a + calcTotal(t), 0);
+      const month = paid.filter(t => t.created_at.startsWith(new Date().toISOString().slice(0, 7))).reduce((a, t) => a + calcTotal(t), 0);
+      const week = paid.filter(t => { const d = new Date(t.created_at); return (Date.now() - d) <= 7 * 86400000; }).reduce((a, t) => a + calcTotal(t), 0);
+
+      const placements = txns.filter(t => t.type === 'placement').reduce((a, t) => a + calcTotal(t), 0);
+      const retainer = txns.filter(t => t.type === 'retainer').reduce((a, t) => a + calcTotal(t), 0);
+      const saas = txns.filter(t => t.type === 'saas').reduce((a, t) => a + calcTotal(t), 0);
+      const other = txns.filter(t => t.type === 'other').reduce((a, t) => a + t.total, 0);
+      const maxStream = Math.max(placements, retainer, saas, other, 1);
+
+      const placementTxns = txns.filter(t => t.type === 'placement');
+      const hireCount = placementTxns.length;
+      const avgFee = hireCount ? Math.round(placementTxns.reduce((a, t) => a + Number(t.amount), 0) / hireCount) : 0;
+      const clients = new Set(paid.map(t => t.client_name)).size;
+      const collRate = txns.length ? Math.round(paid.length / txns.length * 100) : 0;
+
+      setText('heroRevenue', '₹' + fmt(total));
+      setText('heroMonth', '₹' + fmt(month));
+      setText('heroPending', '₹' + fmt(pend));
+      setText('heroWeek', '₹' + fmt(week));
+
+      setText('kpi-placements', hireCount);
+      setText('kpi-invoices', txns.length);
+      setText('kpi-paid', paid.length);
+      setText('kpi-pending', pending.length);
+      setText('kpi-saas', '₹' + fmt(saas));
+      setText('kpi-avgfee', '₹' + fmt(avgFee));
+      setText('kpi-clients', clients);
+      setText('kpi-collection', collRate + '%');
+
+      setText('sc-placement', '₹' + fmt(placements));
+      setText('sc-placement-sub', `${hireCount} hires × ₹${fmt(avgFee)} avg`);
+      setText('sc-retainer', '₹' + fmt(retainer));
+      setText('sc-retainer-sub', txns.filter(t => t.type === 'retainer').length + ' contracts');
+      setText('sc-saas', '₹' + fmt(saas));
+      setText('sc-saas-sub', txns.filter(t => t.type === 'saas').length + ' subscribers');
+      setText('sc-other', '₹' + fmt(other));
+      setText('sc-other-sub', txns.filter(t => t.type === 'other').length + ' projects');
+
+      setWidth('sc-placement-bar', placements / maxStream * 100);
+      setWidth('sc-retainer-bar', retainer / maxStream * 100);
+      setWidth('sc-saas-bar', saas / maxStream * 100);
+      setWidth('sc-other-bar', other / maxStream * 100);
+
+      renderMonthlyChart();
+      renderRecentTable();
+    }
+
+    function renderMonthlyChart() {
+      const months = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(); d.setMonth(d.getMonth() - i);
+        months.push({ key: d.toISOString().slice(0, 7), label: d.toLocaleString('en-IN', { month: 'short' }) });
+      }
+      const vals = months.map(m => data.transactions.filter(t => t.date.startsWith(m.key) && t.status === 'paid').reduce((a, t) => a + t.total, 0));
+      const max = Math.max(...vals, 1);
+      const chart = document.getElementById('barChart');
+      const labels = document.getElementById('barLabels');
+      if (!chart) return;
+      chart.innerHTML = vals.map((v, i) => `<div class="bc-bar" style="height:${Math.round(v / max * 100)}%" data-val="₹${fmt(v)}"></div>`).join('');
+      labels.innerHTML = months.map(m => `<div class="bc-label">${m.label}</div>`).join('');
+    }
+
+    function renderRecentTable() {
+      const body = document.getElementById('recentTable');
+      if (!body) return;
+      const recent = data.transactions.slice(0, 10);
+      if (!recent.length) { body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">No transactions yet. Record a payment to begin.</td></tr>'; return; }
+
+      const calcTotal = (tx) => Number(tx.amount) + Math.round(Number(tx.amount) * (Number(tx.gst_pct) / 100)) - Number(tx.discount || 0);
+
+      body.innerHTML = recent.map(t => `
+    <tr>
+      <td class="mono-val">${new Date(t.created_at).toISOString().slice(0, 10)}</td>
+      <td><span class="badge ${t.type}">${t.type}</span></td>
+      <td>${t.client_name}</td>
+      <td style="color:var(--muted);font-size:0.78rem">${t.description || '—'}</td>
+      <td class="mono-val green-text">₹${fmt(calcTotal(t))}</td>
+      <td><span class="badge ${t.status}">${t.status}</span></td>
+      <td>${t.status !== 'paid' ? `<button class="btn btn-ghost btn-sm" onclick="markPaid('${t.id}')">✓ Mark Paid</button>` : ''}</td>
+    </tr>
+  `).join('');
+    }
+
+    // ══════════════════════════════════════════════════
+    //  REVENUE STREAMS
+    // ══════════════════════════════════════════════════
+    function recordPlacement() {
+      const client = document.getElementById('pl-client').value;
+      const cand = document.getElementById('pl-cand').value;
+      const role = document.getElementById('pl-role').value;
+      const fee = parseInt(document.getElementById('pl-fee').value) || 8000;
+      const city = document.getElementById('pl-city').value;
+      if (!client || !cand) { toast('Fill in client and candidate name', 'error'); return; }
+      recordTransaction({ client, amount: fee, type: 'placement', desc: `${cand} placed as ${role} in ${city}`, status: 'pending' });
+      toast(`Placement recorded — Invoice pending payment of ₹${fmt(fee)}`, 'gold');
+      ['pl-client', 'pl-cand', 'pl-role', 'pl-salary', 'pl-city', 'pl-notes'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    }
+
+    function recordSubscription() {
+      const client = document.getElementById('sub-client').value;
+      const plan = document.getElementById('sub-plan').value;
+      const cycle = document.getElementById('sub-cycle').value;
+      const planAmounts = { starter: 5000, growth: 15000, enterprise: 50000, custom: 0 };
+      const amount = parseInt(document.getElementById('sub-amount').value) || planAmounts[plan];
+      if (!client || !amount) { toast('Fill in client and amount', 'error'); return; }
+      recordTransaction({ client, amount, type: 'saas', desc: `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan — ${cycle}`, status: 'pending' });
+      toast(`Subscription recorded — ₹${fmt(amount)}/month`, 'gold');
+    }
+
+    function recordRetainer() {
+      const client = document.getElementById('ret-client').value;
+      const amount = parseInt(document.getElementById('ret-amount').value);
+      const dur = document.getElementById('ret-duration').value;
+      const vol = document.getElementById('ret-volume').value;
+      if (!client || !amount) { toast('Fill in client and amount', 'error'); return; }
+      recordTransaction({ client, amount, type: 'retainer', desc: `Retainer: ${dur} — ${vol}`, status: 'pending' });
+      toast(`Retainer contract recorded — ₹${fmt(amount)}/month`, 'gold');
+    }
+
+    // ══════════════════════════════════════════════════
+    //  INVOICE BUILDER
+    // ══════════════════════════════════════════════════
+    let invLines = [{ desc: '', qty: 1, rate: 0 }];
+
+    function initInvoice() {
+      const today = new Date().toISOString().slice(0, 10);
+      const due = new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10);
+      document.getElementById('inv-date').value = today;
+      document.getElementById('inv-due').value = due;
+      document.getElementById('inv-num').value = newInvoiceNum();
+      renderInvLines();
+    }
+
+    function renderInvLines() {
+      document.getElementById('inv-lines').innerHTML = invLines.map((l, i) => `
+    <div style="display:grid;grid-template-columns:1fr 80px 100px 100px 32px;gap:0.5rem;align-items:center;margin-bottom:0.5rem">
+      <input class="agent-input" placeholder="Description" value="${l.desc}" oninput="invLines[${i}].desc=this.value">
+      <input class="agent-input" type="number" placeholder="Qty" value="${l.qty}" oninput="invLines[${i}].qty=+this.value" style="text-align:center">
+      <input class="agent-input" type="number" placeholder="Rate ₹" value="${l.rate || ''}" oninput="invLines[${i}].rate=+this.value">
+      <div style="font-family:var(--mono);font-size:0.8rem;color:var(--green);text-align:right">₹${fmt(l.qty * l.rate)}</div>
+      <button class="btn btn-red btn-sm" onclick="removeInvLine(${i})" style="padding:0.3rem">✕</button>
+    </div>
+  `).join('');
+    }
+
+    function addInvItem() { invLines.push({ desc: '', qty: 1, rate: 0 }); renderInvLines(); }
+    function removeInvLine(i) { invLines.splice(i, 1); if (!invLines.length) invLines = [{ desc: '', qty: 1, rate: 0 }]; renderInvLines(); }
+
+    function previewInvoice() {
+      const subtotal = invLines.reduce((a, l) => a + (l.qty * l.rate), 0);
+      const gst = Math.round(subtotal * (parseFloat(document.getElementById('inv-gst').value) || 18) / 100);
+      const disc = parseInt(document.getElementById('inv-discount').value) || 0;
+      const total = subtotal + gst - disc;
+      const invNum = document.getElementById('inv-num').value || newInvoiceNum();
+
+      document.getElementById('invoicePreview').innerHTML = `
+    <div class="inv-header">
+      <div>
+        <div class="inv-logo">AS<span> RECRUITMENT</span></div>
+        <div style="font-size:0.72rem;color:#555;margin-top:0.3rem">${document.getElementById('inv-from-addr').value || ''}<br>${document.getElementById('inv-from-email').value || ''} · ${document.getElementById('inv-from-phone').value || ''}</div>
+      </div>
+      <div class="inv-meta">
+        <div><strong>INVOICE</strong></div>
+        <div>${invNum}</div>
+        <div>Date: <strong>${document.getElementById('inv-date').value || ''}</strong></div>
+        <div>Due: <strong style="color:#c62828">${document.getElementById('inv-due').value || ''}</strong></div>
+        ${S().gstNum ? `<div>GSTIN: <strong>${S().gstNum}</strong></div>` : ''}
+      </div>
+    </div>
+    <div class="inv-divider"></div>
+    <div class="inv-parties">
+      <div><div class="inv-party-label">From</div><div class="inv-party-name">${document.getElementById('inv-from').value || 'AS Recruitment Services'}</div></div>
+      <div><div class="inv-party-label">Bill To</div><div class="inv-party-name">${document.getElementById('inv-to').value || 'Client Name'}</div><div style="font-size:0.75rem;color:#555">${document.getElementById('inv-to-contact').value || ''}<br>${document.getElementById('inv-to-email').value || ''}<br>${document.getElementById('inv-to-addr').value || ''}</div></div>
+    </div>
+    <table class="inv-items">
+      <thead><tr><th>#</th><th>Description</th><th style="text-align:right">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead>
+      <tbody>${invLines.map((l, i) => `<tr><td>${i + 1}</td><td>${l.desc || '—'}</td><td style="text-align:right">${l.qty}</td><td style="text-align:right">₹${fmt(l.rate)}</td><td style="text-align:right">₹${fmt(l.qty * l.rate)}</td></tr>`).join('')}</tbody>
+    </table>
+    <div class="inv-totals">
+      <div class="inv-total-row"><span>Subtotal</span><span>₹${fmt(subtotal)}</span></div>
+      <div class="inv-total-row"><span>GST (${document.getElementById('inv-gst').value || 18}%)</span><span>₹${fmt(gst)}</span></div>
+      ${disc ? `<div class="inv-total-row"><span>Discount</span><span style="color:#c62828">-₹${fmt(disc)}</span></div>` : ''}
+      <div class="inv-total-row final"><span>TOTAL DUE</span><span>₹${fmt(total)}</span></div>
+    </div>
+    <div class="inv-footer">${document.getElementById('inv-terms').value || 'Payment due within 15 days.'}</div>
+    <div class="inv-stamp">PAYABLE<br>₹${fmt(total)}</div>
+  `;
+      document.getElementById('invoicePreview').classList.add('show');
+      document.getElementById('invPlaceholder').style.display = 'none';
+    }
+
+    function saveAndRecord() {
+      previewInvoice();
+      const subtotal = invLines.reduce((a, l) => a + (l.qty * l.rate), 0);
+      const gstPct = parseFloat(document.getElementById('inv-gst').value) || 18;
+      const gst = Math.round(subtotal * gstPct / 100);
+      const client = document.getElementById('inv-to').value;
+      const invNum = document.getElementById('inv-num').value;
+      if (!client || !subtotal) { toast('Fill in client and add at least one line item', 'error'); return; }
+      const desc = invLines.map(l => l.desc).filter(Boolean).join(', ');
+
+      recordTransaction({
+        client,
+        email: document.getElementById('inv-to-email').value,
+        amount: subtotal,
+        type: 'other',
+        desc,
+        status: 'pending',
+        method: 'Invoice',
+        invoiceNum: invNum
+      });
+
+      toast(`Invoice ${invNum} saved — ₹${fmt(subtotal + gst)} pending`, 'gold');
+      document.getElementById('inv-num').value = newInvoiceNum();
+    }
+
+    function printInvoice() {
+      const content = document.getElementById('invoicePreview').innerHTML;
+      if (!content) { toast('Preview invoice first', 'error'); return; }
+      const w = window.open('', '_blank');
+      w.document.write(`<!DOCTYPE html><html><head><style>body{font-family:monospace;margin:2rem}${document.querySelector('style').textContent}</style></head><body>${document.getElementById('invoicePreview').outerHTML}</body></html>`);
+      w.document.close(); w.print();
+    }
+
+    // ══════════════════════════════════════════════════
+    //  AI AGENT
+    // ══════════════════════════════════════════════════
+    function quickQuestion(q) { document.getElementById('agent-q').value = q; askAgent(); }
+
+    async function askAgent() {
+      const q = document.getElementById('agent-q').value.trim();
+      if (!q) return;
+      const stream = document.getElementById('agentStream');
+
+      const context = JSON.stringify({
+        totalRevenue: data.transactions.filter(t => t.status === 'paid').reduce((a, t) => a + t.total, 0),
+        pendingRevenue: data.transactions.filter(t => t.status !== 'paid').reduce((a, t) => a + t.total, 0),
+        transactions: data.transactions.slice(0, 20),
+        byType: ['placement', 'retainer', 'saas', 'other'].reduce((acc, tp) => ({ ...acc, [tp]: data.transactions.filter(t => t.type === tp).reduce((a, t) => a + t.total, 0) }), {}),
+        overdueCount: data.transactions.filter(t => t.status === 'overdue').length,
+      });
+
+      addToStream(stream, `YOU: ${q}`, 'b');
+      addToStream(stream, 'Agent analysing your revenue data...', '');
+
+      try {
+        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1000,
+            messages: [{
+              role: 'user',
+              content: `You are ASR's Revenue Agent. You have access to real revenue data for AS Recruitment Services, a BPO staffing company in India. Be specific, practical, and direct. Use ₹ for amounts. Data: ${context}\n\nQuestion: ${q}`
+            }]
+          })
+        });
+        const d = await resp.json();
+        const txt = d.content?.[0]?.text || 'Unable to get response.';
+        addToStream(stream, 'AGENT: ' + txt, 'g');
+      } catch (e) {
+        // Fallback local analysis
+        addToStream(stream, 'AGENT: ' + localAnalysis(q), 'g');
+      }
+    }
+
+    function localAnalysis(q) {
+      const txns = data.transactions;
+      const paid = txns.filter(t => t.status === 'paid');
+      const pend = txns.filter(t => t.status !== 'paid');
+      const total = paid.reduce((a, t) => a + t.total, 0);
+      const pTotal = pend.reduce((a, t) => a + t.total, 0);
+
+      if (q.toLowerCase().includes('pending') || q.toLowerCase().includes('overdue') || q.toLowerCase().includes('owe')) {
+        if (!pend.length) return 'No pending payments. All invoices are collected. Excellent!';
+        return `${pend.length} pending payment(s) totalling ₹${fmt(pTotal)}:\n${pend.map(t => `• ${t.client} — ₹${fmt(t.total)} (${t.invoiceNum})`).join('\n')}\n\nAction: Follow up immediately. Call HR directly, don't just email.`;
+      }
+      if (q.toLowerCase().includes('summary') || q.toLowerCase().includes('total')) {
+        return `Revenue Summary:\n• Total collected: ₹${fmt(total)}\n• Pending collection: ₹${fmt(pTotal)}\n• Transactions: ${txns.length}\n• Paid: ${paid.length}\n• Pending: ${pend.length}\n\nTo unlock AI insights, add your Anthropic API key.`;
+      }
+      if (q.toLowerCase().includes('week') || q.toLowerCase().includes('action')) {
+        return pend.length
+          ? `This week's priority:\n1. Collect ₹${fmt(pTotal)} from ${pend.length} pending client(s)\n2. Record any new placements made this week\n3. Follow up with leads who haven't responded\n4. Check if any retainer invoices need to be raised`
+          : `This week: No pending collections. Focus on:\n1. Finding new companies to pitch\n2. Adding candidates to the database\n3. Running outreach emails`;
+      }
+      return `Based on your data: ₹${fmt(total)} collected, ₹${fmt(pTotal)} pending from ${pend.length} client(s). Add your Anthropic API key in Settings for full AI analysis.`;
+    }
+
+    function addToStream(el, msg, cls) {
+      const d = document.createElement('div');
+      d.className = 'sl ' + cls;
+      d.textContent = msg;
+      el.appendChild(d);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function updateInsights() {
+      const txns = data.transactions;
+      const paid = txns.filter(t => t.status === 'paid');
+      const pend = txns.filter(t => t.status !== 'paid');
+      const total = paid.reduce((a, t) => a + t.total, 0);
+      const pTotal = pend.reduce((a, t) => a + t.total, 0);
+      const overdue = txns.filter(t => t.status === 'overdue');
+
+      const insights = [];
+      if (overdue.length) insights.push({ icon: '🔴', text: `${overdue.length} overdue invoice(s) — ₹${fmt(overdue.reduce((a, t) => a + t.total, 0))} needs urgent follow-up`, color: 'var(--red)' });
+      if (pend.length) insights.push({ icon: '🟡', text: `₹${fmt(pTotal)} pending from ${pend.length} client(s) — collection rate ${total ? Math.round(paid.length / txns.length * 100) : 0}%`, color: 'var(--gold)' });
+      if (!txns.length) insights.push({ icon: '💡', text: 'No transactions yet. Record your first payment to see insights.', color: 'var(--muted)' });
+      const placements = txns.filter(t => t.type === 'placement');
+      if (placements.length) {
+        const avgFee = Math.round(placements.reduce((a, t) => a + t.amount, 0) / placements.length);
+        insights.push({ icon: '📈', text: `Average placement fee: ₹${fmt(avgFee)}. ${avgFee < 8000 ? 'Consider raising to ₹8,000-₹10,000 for BPO roles.' : 'Good fee level.'}`, color: 'var(--green)' });
+      }
+      if (total >= 100000) insights.push({ icon: '🏆', text: `₹${fmt(total)} collected! You've crossed ₹1L milestone. Scale outreach to 100 companies/day for ₹5L/month.`, color: 'var(--gold)' });
+
+      const el = document.getElementById('insights-list');
+      if (!el) return;
+      el.innerHTML = insights.length ? insights.map(i => `
+    <div style="display:flex;gap:0.8rem;align-items:flex-start;padding:0.8rem;background:var(--s1);border-radius:8px;border:1px solid var(--border)">
+      <span style="font-size:1.1rem">${i.icon}</span>
+      <span style="font-size:0.78rem;font-family:var(--mono);color:${i.color};line-height:1.5">${i.text}</span>
+    </div>
+  `).join('') : '<div style="font-size:0.78rem;color:var(--muted);font-family:var(--mono)">No insights yet.</div>';
+
+      // Upcoming payments
+      const cal = document.getElementById('payment-calendar');
+      if (cal && pend.length) {
+        cal.innerHTML = pend.slice(0, 5).map(t => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0.8rem;background:var(--s1);border-radius:7px;border:1px solid var(--border)">
+        <div><div style="font-family:var(--mono);font-size:0.72rem;color:var(--text)">${t.client}</div><div style="font-size:0.65rem;color:var(--muted)">${t.invoiceNum}</div></div>
+        <div style="font-family:var(--mono);font-size:0.85rem;color:var(--gold)">₹${fmt(t.total)}</div>
+      </div>
+    `).join('');
+      }
+    }
+
+    // ══════════════════════════════════════════════════
+    //  UTILITIES
+    // ══════════════════════════════════════════════════
+    function fmt(n) {
+      if (!n) return '0';
+      if (n >= 10000000) return (n / 10000000).toFixed(1) + 'Cr';
+      if (n >= 100000) return (n / 100000).toFixed(1) + 'L';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+      return n.toLocaleString('en-IN');
+    }
+    function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+    function setWidth(id, w) { const el = document.getElementById(id); if (el) el.style.width = Math.min(w, 100) + '%'; }
+
+    let toastTimeout;
+    function toast(msg, type = '') {
+      const t = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const m = document.getElementById('toast-msg');
+      t.className = 'toast ' + type;
+      icon.textContent = type === 'error' ? '✕' : type === 'gold' ? '₹' : '✓';
+      m.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    function exportCSV() {
+      const rows = [['Date', 'Invoice', 'Type', 'Client', 'Description', 'Amount', 'GST', 'Total', 'Status', 'Method', 'TxnID']];
+      data.transactions.forEach(t => rows.push([t.date, t.invoiceNum, t.type, t.client, t.desc, t.amount, t.gst, t.total, t.status, t.method, t.txnId]));
+      const csv = rows.map(r => r.join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = `ASR_Revenue_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      toast('CSV exported ✓');
+    }
+
+    // ── Init ──────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', async () => {
+      loadSettings();
+      await loadData(); // DYNAMIC FETCH FROM RENDER API
+      initInvoice();
+      renderInvLines();
+      updateOverview();
+      renderTransactions();
+      updateInsights();
+    });
+  </script>
+</body>
+
+</html>
