@@ -602,6 +602,82 @@
             transform: none;
         }
 
+        /* ═══ UPLOADER ═══ */
+        .upload-area {
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 24px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 229, 255, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+
+        .upload-text {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+        }
+
+        .upload-text span {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .upload-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 24px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .upload-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .upload-progress {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
@@ -668,6 +744,21 @@
             <button class="search-btn" id="match-btn" onclick="runMatch()">
                 🎯 AI Match
             </button>
+        </div>
+
+        <!-- Live Candidate Intake UI -->
+        <div class="upload-area" id="drop-zone">
+            <div class="upload-icon">📄</div>
+            <div class="upload-text">Drag & drop candidate resumes here (PDF, DOCX) or <span>click to browse</span></div>
+            <input type="file" id="fileInput" name="resume" accept=".pdf,.doc,.docx" style="display:none;" />
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Select File</button>
+
+            <div class="upload-progress" id="upload-progress">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <div class="progress-text" id="progress-text">0% - Uploading to engine...</div>
+            </div>
         </div>
 
         <!-- Results Table -->
@@ -905,6 +996,88 @@
                 btn.disabled = false;
                 btn.textContent = '🎯 AI Match';
             }
+        }
+
+        // Upload System
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('fileInput');
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop zone
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }, false);
+
+        // Handle selected flies
+        fileInput.addEventListener('change', function () {
+            handleFiles(this.files);
+        });
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+            uploadFile(file);
+        }
+
+        function uploadFile(file) {
+            const progressArea = document.getElementById('upload-progress');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+
+            progressArea.style.display = 'block';
+            progressBar.style.width = '30%';
+            progressText.innerText = `Uploading ${file.name}...`;
+
+            addLog('Candidate Intake', `Beginning raw upload for ${file.name}`, 'info');
+
+            const url = `${API}/api/upload-resume`;
+            const formData = new FormData();
+            formData.append('resume', file);
+
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                   progressBar.style.width = '100%';
+                   progressText.innerText = `Parse Complete. Score: ${data.score}/100`;
+                   addLog('Resume Parser', `Physically parsed ${file.name}. Raw text successfully extracted. Assigned base NLP score: ${data.score}/100. Candidate ingested into live Postgres.`, 'log-success');
+                   setTimeout(() => { progressArea.style.display = 'none'; }, 5000);
+                   fetchStats(); // Update dashboard
+                } else {
+                    progressBar.style.background = 'var(--accent-rose)';
+                    progressText.innerText = 'Upload Error.';
+                    addLog('Resume Parser', `Parse Error: ${data.error}`, 'log-error');
+                }
+            })
+            .catch(err => {
+                progressBar.style.background = 'var(--accent-rose)';
+                progressText.innerText = 'Server Error.';
+                addLog('Candidate Intake', `Network Error connecting to physical backend: ${err.message}`, 'log-error');
+            });
         }
 
         // Initialize
