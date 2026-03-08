@@ -1,12 +1,13 @@
-# Use Node.js 18 as the base image
-FROM node:18-slim
+# Use Node.js 18 as the base image (full version for build tools)
+FROM node:18
 
-# Install Python 3 and dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
     libsqlite3-dev \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
