@@ -1,0 +1,52 @@
+
+# AI (optional — works in rule-based mode without)
+# AI scoring (optional — works without this in rule-based mode)
+# ASR 7-Agent System — Requirements
+# ASR AI Lead Engine — Requirements
+# ASR Candidate Database Engine — Requirements
+# ASR Platform — Requirements
+# Automation trigger
+# Cloud database (optional — add when scaling beyond 50K candidates)
+# Copy asr_candidate_engine.py into this folder OR install as a local package
+# Core
+# Core (always needed)
+# Core AI framework
+# Data handling
+# Database (Agent 6 — reuses candidate engine)
+# Environment
+# Google Sheets
+# Google Sheets sync (optional)
+# Install with: pip install -r requirements.txt
+# LLM provider
+# Resume parsing
+# Resume parsing (Agent 5)
+# Resume parsing (optional — Phase 2)
+# Run after install: python -m spacy download en_core_web_sm
+# Scheduling
+# Search
+# Web search (optional but recommended)
+# WhatsApp Bot
+# google-search-results>=2.4.0   # SerpAPI — optional
+# langchain-openai>=0.1.0
+# openai>=1.0.0
+# openai>=1.0.0                  # optional AI personalisation
+# pip install -r requirements.txt
+# spacy>=3.7.0
+# spacy>=3.7.0                  # Optional NLP — pip install spacy && python -m spacy download en_core_web_sm
+# supabase>=2.0.0
+crewai-tools>=0.1.0
+crewai>=0.28.0
+flask>=3.0.0
+google-auth-oauthlib>=1.0.0
+google-auth>=2.0.0
+google-search-results>=2.4.0    # SerpAPI — free 100 searches/month
+google-search-results>=2.4.0   # SerpAPI
+gspread>=6.0.0
+langchain-openai>=0.1.0
+langchain>=0.1.0
+pdfplumber>=0.10.0
+pdfplumber>=0.10.0              # PDF text extraction
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+schedule>=1.2.0

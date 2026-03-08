@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASR Services AI Screener – Screening Results</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+    <style>
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 4px;
+            background: var(--bg-input);
+            border-radius: var(--radius-md);
+            max-width: 400px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: var(--transition-fast);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--accent-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .rejection-pill {
+            background: var(--danger-light);
+            color: var(--danger);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="navbar-container"></div>
+
+        <div class="page-hero">
+            <div class="text-center animate-fadeInUp" style="margin-bottom: 40px;">
+                <span class="badge">Screening Complete</span>
+                <h1 style="margin-top: 16px;">Analysis <span style="color:var(--accent-primary);">Report</span></h1>
+                <p class="subtitle" id="summaryText">Screening summary loading...</p>
+            </div>
+
+            <!-- Stats Card -->
+            <div class="stats-row mb-3 animate-fadeInUp animate-delay-1" id="statsRow"></div>
+
+            <!-- Action Buttons -->
+            <div style="display:flex; justify-content:center; gap:12px; margin-bottom:32px; flex-wrap:wrap;"
+                class="animate-fadeInUp animate-delay-2">
+                <button id="exportSelected" class="btn btn-primary">📥 Export Selected (CSV)</button>
+                <button id="exportAll" class="btn btn-secondary">📥 Export All</button>
+                <a href="dashboard.html" class="btn btn-secondary">🔄 Start New Batch</a>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tab-nav animate-fadeInUp animate-delay-3" style="margin: 0 auto 32px;">
+                <button class="tab-btn active" onclick="switchTab('selected')">Selected <span
+                        id="selCount"></span></button>
+                <button class="tab-btn" onclick="switchTab('rejected')">Rejected <span id="rejCount"></span></button>
+            </div>
+
+            <!-- Selected Candidates -->
+            <div id="tab-selected" class="tab-content active animate-fadeIn">
+                <div class="card card-elevated">
+                    <h3 style="margin-bottom: 20px; color: var(--success);">✅ Top Matches</h3>
+                    <div style="overflow-x:auto;">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">Rank</th>
+                                    <th>Candidate</th>
+                                    <th style="width: 80px;">Score</th>
+                                    <th>Exp</th>
+                                    <th>Location</th>
+                                    <th>Matched Skills</th>
+                                </tr>
+                            </thead>
+                            <tbody id="selectedTable"></tbody>
+                        </table>
+                    </div>
+                    <div id="selectedEmpty" class="text-center hidden" style="padding: 40px;">
+                        <p style="color:var(--text-muted);">No candidates met the minimum threshold.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rejected Candidates -->
+            <div id="tab-rejected" class="tab-content animate-fadeIn">
+                <div class="card">
+                    <h3 style="margin-bottom: 20px; color: var(--danger);">❌ Rejected Candidates</h3>
+                    <div style="overflow-x:auto;">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th style="width: 80px;">Score</th>
+                                    <th>Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rejectedTable"></tbody>
+                        </table>
+                    </div>
+                    <div id="rejectedEmpty" class="text-center hidden" style="padding: 40px;">
+                        <p style="color:var(--text-muted);">No candidates were rejected.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer class="legal-footer">
+            <p>Data Privacy Guaranteed • AI-Driven Accuracy • © 2026 ASR Services AI Screener</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        let globalResults = null;
+
+        function switchTab(name) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+        }
+
+        function getScoreClass(score) {
+            if (score >= 70) return 'score-high';
+            if (score >= 40) return 'score-mid';
+            return 'score-low';
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!await Utils.requireLogin()) return;
+            await Utils.renderNavbar('navbar-container');
+
+            const raw = sessionStorage.getItem('rs_results');
+            if (!raw) { window.location.href = 'dashboard.html'; return; }
+
+            const data = JSON.parse(raw);
+            globalResults = data;
+            const { selected, rejected, total, passThreshold } = data;
+
+            document.getElementById('summaryText').textContent =
+                `Processed ${total} resumes with ${passThreshold}% pass threshold.`;
+
+            document.getElementById('selCount').textContent = `(${selected.length})`;
+            document.getElementById('rejCount').textContent = `(${rejected.length})`;
+
+            // Stats
+            const avg = total > 0 ? Math.round([...selected, ...rejected].reduce((a, b) => a + b.composite, 0) / total) : 0;
+            document.getElementById('statsRow').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Total Analysed</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--success)">${selected.length}</div><div class="stat-label">Selected</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${rejected.length}</div><div class="stat-label">Rejected</div></div>
+        <div class="stat-card"><div class="stat-value">${avg}%</div><div class="stat-label">Avg Match</div></div>
+      `;
+
+            // Selected Table
+            if (selected.length === 0) document.getElementById('selectedEmpty').classList.remove('hidden');
+            document.getElementById('selectedTable').innerHTML = selected.map((r, i) => `
+        <tr>
+          <td style="font-weight:900; color:var(--accent-primary);">${i + 1}</td>
+          <td>
+            <div style="font-weight:700; color:var(--text-primary);">${r.fileName}</div>
+            <div style="font-size:0.75rem; color:var(--text-light);">${Utils.formatFileSize(r.fileSize)}</div>
+          </td>
+          <td><span class="score-badge ${getScoreClass(r.composite)}">${r.composite}%</span></td>
+          <td><div style="font-weight:600;">${r.criteria.overallExp.years}y</div><div style="font-size:0.75rem; color:var(--text-light);">Total</div></td>
+          <td><div style="font-weight:600;">${r.criteria.location.found}</div></td>
+          <td>
+            ${r.criteria.skills.matched.slice(0, 3).map(s => `<span class="keyword-pill keyword-matched">${s}</span>`).join('')}
+            ${r.criteria.skills.matched.length > 3 ? `<span style="font-size:0.75rem; color:var(--text-light); padding-left:4px;">+${r.criteria.skills.matched.length - 3}</span>` : ''}
+          </td>
+        </tr>
+      `).join('');
+
+            // Rejected Table
+            if (rejected.length === 0) document.getElementById('rejectedEmpty').classList.remove('hidden');
+            document.getElementById('rejectedTable').innerHTML = rejected.map(r => `
+        <tr>
+          <td>
+            <div style="font-weight:700; color:var(--text-primary);">${r.fileName}</div>
+            <div style="font-size:0.75rem; color:var(--text-light);">${Utils.formatFileSize(r.fileSize)}</div>
+          </td>
+          <td><span class="score-badge ${getScoreClass(r.composite)}">${r.composite}%</span></td>
+          <td><span class="rejection-pill">${r.rejectionReason}</span></td>
+        </tr>
+      `).join('');
+
+            // Export
+            document.getElementById('exportSelected').onclick = () => {
+                const headers = ["Rank", "Candidate", "Score", "Exp", "Location", "Skills"];
+                const rows = selected.map((r, i) => [i + 1, r.fileName, r.composite, r.criteria.overallExp.years, r.criteria.location.found, r.criteria.skills.matched.join('; ')]);
+                Utils.exportCSV(headers, rows, 'selected_candidates.csv');
+            };
+            document.getElementById('exportAll').onclick = () => {
+                const headers = ["Candidate", "Status", "Score", "Reason"];
+                const rows = [...selected.map(r => [r.fileName, 'Selected', r.composite, '']), ...rejected.map(r => [r.fileName, 'Rejected', r.composite, r.rejectionReason])];
+                Utils.exportCSV(headers, rows, 'all_screening_results.csv');
+            };
+
+        });
+    </script>
+</body>
+
+</html>

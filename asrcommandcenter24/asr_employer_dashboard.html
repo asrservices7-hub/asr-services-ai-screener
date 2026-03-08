@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASR Live Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #030014;
+            --surface: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+            --accent-1: #00f0ff;
+            --accent-2: #8a2be2;
+            --text-main: #ffffff;
+            --text-muted: #8b9bb4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(circle at 0% 0%, rgba(138, 43, 226, 0.15), transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(0, 240, 255, 0.15), transparent 40%);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 5%;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 0 3rem 0;
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-box {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .status-badge {
+            background: rgba(0, 255, 128, 0.1);
+            color: #00ff80;
+            border: 1px solid rgba(0, 255, 128, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff80;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ff80;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-2), var(--accent-1));
+            color: #fff;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 240, 255, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .ai-prompt {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .ai-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .ai-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Loading Animation */
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Table */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        td {
+            font-size: 0.95rem;
+        }
+
+        .score-pill {
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--accent-1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            display: inline-block;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <div class="logo-wrap">
+                <div class="logo-box">A</div>
+                <div class="logo-text">ASR AI Screener</div>
+            </div>
+            <div class="status-badge" id="conn-status">
+                <div class="status-dot"></div>
+                Connecting to Server...
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="val-candidates">-</div>
+                <div class="stat-label">Total Verified Candidates</div>
+            </div>
+            <div class="card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value" id="val-score">-</div>
+                <div class="stat-label">Average Quality Match</div>
+            </div>
+            <div class="card">
+                <div class="stat-icon">💼</div>
+                <div class="stat-value" id="val-value">-</div>
+                <div class="stat-label">Est. Pipeline Value</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1.5rem; font-weight: 500; font-size: 1.2rem;">Live AI Recruitment Engine</h3>
+
+            <div class="ai-prompt">
+                <input type="text" id="search-input" class="ai-input"
+                    placeholder="e.g. 'Looking for 5 BPO Voice candidates in Lucknow...'" value="BPO Lucknow">
+                <button class="btn" id="search-btn" onclick="runSearch()">
+                    <div class="loader" id="search-loader"></div>
+                    <span id="search-text">Find Matches</span>
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Candidate Name</th>
+                            <th>Primary Skill</th>
+                            <th>Location</th>
+                            <th>Source</th>
+                            <th>AI Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="candidate-tbody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                                Click "Find Matches" to activate the cloud AI screening engine.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Live Cloud Server URL
+        const API_BASE = 'https://asr-services-backend.onrender.com';
+
+        // 1. Fetch live metrics on load
+        async function fetchStats() {
+            const statusEl = document.getElementById('conn-status');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/agents/stats`);
+                const data = await response.json();
+
+                // Check if candidates object exists before accessing
+                if (data.candidates) {
+                    // Formatting values securely
+                    document.getElementById('val-candidates').textContent = data.candidates.total.toLocaleString();
+                    document.getElementById('val-score').textContent = data.candidates.avg_score + '%';
+                    document.getElementById('val-value').textContent = '₹' + data.candidates.pipeline_value.toLocaleString();
+
+                    statusEl.innerHTML = `<div class="status-dot"></div> Live Connection Established`;
+                } else {
+                    throw new Error("Invalid data structure");
+                }
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                statusEl.innerHTML = `<div class="status-dot" style="background:#ff3366;box-shadow:0 0 10px #ff3366"></div> Connection Failed`;
+                statusEl.style.color = "#ff3366";
+                statusEl.style.borderColor = "rgba(255,51,102,0.3)";
+                statusEl.style.background = "rgba(255,51,102,0.1)";
+            }
+        }
+
+        // 2. Trigger AI Engine
+        async function runSearch() {
+            const query = document.getElementById('search-input').value;
+            if (!query) return;
+
+            const btnText = document.getElementById('search-text');
+            const loader = document.getElementById('search-loader');
+            const searchBtn = document.getElementById('search-btn');
+            const tbody = document.getElementById('candidate-tbody');
+
+            // Loading State
+            searchBtn.disabled = true;
+            btnText.textContent = "AI Agents Scanning...";
+            loader.style.display = "block";
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--accent-1); padding: 2rem;">Agents analyzing 50+ resumes in real-time...</td></tr>`;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/agents/match`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                const matches = await response.json();
+
+                if (Array.isArray(matches) && matches.length > 0) {
+                    tbody.innerHTML = matches.map(c => `
+                    <tr>
+                        <td style="font-weight: 500;">${c.name}</td>
+                        <td style="color: var(--text-muted);">${c.primary_skill}</td>
+                        <td>${c.city}</td>
+                        <td style="color: var(--text-muted);">${c.source || 'N/A'}</td>
+                        <td><span class="score-pill">${c.overall_score}%</span></td>
+                    </tr>
+                `).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No candidates matched the criteria.</td></tr>`;
+                }
+            } catch (err) {
+                console.error("Match Error:", err);
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ff3366; padding: 2rem;">Error connecting to Python Engine. Render might be timing out.</td></tr>`;
+            } finally {
+                // Restore button
+                searchBtn.disabled = false;
+                btnText.textContent = "Find Matches";
+                loader.style.display = "none";
+            }
+        }
+
+        // Initialize
+        window.onload = fetchStats;
+    </script>
+</body>
+
+</html>

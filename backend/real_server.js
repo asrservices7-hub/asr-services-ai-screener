@@ -12,6 +12,8 @@ const axios = require('axios');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database(path.join(PROJECT_ROOT, 'asr_candidates.db'));
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -59,7 +61,7 @@ async function runLeadAgent(state) {
     const response = await axios.get('https://remotive.com/api/remote-jobs?category=customer_support&limit=5');
     const jobs = response.data.jobs || [];
     let discovered = 0;
-    
+
     for (const job of jobs) {
       if (!state.leads.find(l => l.company === job.company_name)) {
         const lead = {
@@ -70,13 +72,13 @@ async function runLeadAgent(state) {
         state.leads.unshift(lead);
         discovered++;
         // Push to real DB if exists
-        if (supabase) await supabase.from('asr_leads').insert([lead]).catch(()=>null);
+        if (supabase) await supabase.from('asr_leads').insert([lead]).catch(() => null);
       }
     }
     state.stats.total_leads += discovered;
     addLog(state, 'Lead Generation', `Scraped ${discovered} real company leads via Remotive Open API`, 'success');
     return { count: discovered, source: 'Remotive API' };
-  } catch(e) {
+  } catch (e) {
     console.error(e);
     addLog(state, 'Lead Generation', `API Error fallback used`, 'error');
     return { count: 0 };
@@ -98,7 +100,7 @@ async function runOutreachAgent(state) {
     sent++;
     const logEntry = { lead_id: lead.id, company: lead.company, method: 'Email', status: mailerOpts ? 'SMTP Sent' : 'Queued (No SMTP)' };
     state.outreach.push(logEntry);
-    if (supabase) await supabase.from('asr_outreach').insert([logEntry]).catch(()=>null);
+    if (supabase) await supabase.from('asr_outreach').insert([logEntry]).catch(() => null);
 
     // Physically send email
     if (mailerOpts) {
@@ -110,7 +112,7 @@ async function runOutreachAgent(state) {
           subject: `ASR Outreach: Placement for ${lead.company}`,
           text: `Transparency Test: ASR Agent just generated an outreach draft for ${lead.company} regarding the ${lead.role_needed} role.\n\nLead Source: ${lead.job_url}`
         });
-      } catch(e) { console.error('Email error:', e); }
+      } catch (e) { console.error('Email error:', e); }
     }
   }
   state.stats.total_outreach += sent;
@@ -118,7 +120,7 @@ async function runOutreachAgent(state) {
   return { sent };
 }
 
-// 3. CANDIDATE INTAKE: Fetches real random data for inbound
+// 3. CANDIDATE INTAKE: Fetches real random data and stores in SQLite
 async function runCandidateAgent(state) {
   try {
     const response = await axios.get('https://randomuser.me/api/?results=3&nat=in');
@@ -127,18 +129,33 @@ async function runCandidateAgent(state) {
     for (const u of users) {
       const skills = ['BPO Voice', 'Customer Support', 'Data Entry', 'HR Recruiter'];
       const c = {
-        id: `C${Date.now()}-${count}`, name: `${u.name.first} ${u.name.last}`, city: u.location.city,
+        candidate_id: `C${Date.now()}-${count}`,
+        name: `${u.name.first} ${u.name.last}`,
+        city: u.location.city,
         primary_skill: skills[Math.floor(Math.random() * skills.length)],
-        experience_years: Math.floor(Math.random() * 5) + 1, score: 0, source: 'API Scrape', phone: u.phone, status: 'active'
+        total_experience_yrs: Math.floor(Math.random() * 5) + 1,
+        overall_score: 60 + Math.floor(Math.random() * 30),
+        source: 'API Scrape',
+        phone: u.phone,
+        status: 'active',
+        date_added: new Date().toISOString()
       };
+
+      // Save to SQLite
+      const sql = `INSERT INTO candidates (candidate_id, name, city, primary_skill, total_experience_yrs, overall_score, source, phone, status, date_added) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      db.run(sql, [c.candidate_id, c.name, c.city, c.primary_skill, c.total_experience_yrs, c.overall_score, c.source, c.phone, c.status, c.date_added]);
+
       state.candidates.unshift(c);
-      if (supabase) await supabase.from('asr_candidates').insert([c]).catch(()=>null);
+      if (supabase) await supabase.from('asr_candidates').insert([c]).catch(() => null);
       count++;
     }
     state.stats.total_candidates += count;
-    addLog(state, 'Candidate Intake', `Pulled ${count} candidates from open data sources`, 'success');
+    addLog(state, 'Candidate Intake', `Pulled ${count} candidates and saved to database`, 'success');
     return { count };
-  } catch(e) { return { count: 0 }; }
+  } catch (e) {
+    console.error(e);
+    return { count: 0 };
+  }
 }
 
 // 4. RESUME PARSER & SCORER: Local offline text processing algorithms
@@ -193,14 +210,14 @@ app.post('/api/upload-resume', upload.single('resume'), async (req, res) => {
   try {
     const dataBuffer = fs.readFileSync(req.file.path);
     const data = await pdfParse(dataBuffer);
-    
+
     // basic keyword matching
     const txt = data.text.toLowerCase();
     let score = 50;
     if (txt.includes('sales')) score += 10;
     if (txt.includes('bpo')) score += 15;
     if (txt.includes('support')) score += 10;
-    
+
     fs.unlinkSync(req.file.path); // clean up
 
     return res.json({ success: true, textExtracted: data.text.substring(0, 100), score });
@@ -209,12 +226,27 @@ app.post('/api/upload-resume', upload.single('resume'), async (req, res) => {
   }
 });
 
+// Admin DB Export (CSV)
+app.get('/api/admin/download-db', (req, res) => {
+  db.all("SELECT * FROM candidates", [], (err, rows) => {
+    if (err) return res.status(500).send("Database error");
+    if (!rows || rows.length === 0) return res.status(404).send("No data to export");
+
+    const headers = Object.keys(rows[0]).join(",");
+    const csv = [headers, ...rows.map(row => Object.values(row).map(v => `"${v}"`).join(","))].join("\n");
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=asr_talent_database.csv');
+    res.status(200).send(csv);
+  });
+});
+
 // Standard Agent Command Interface
 app.post('/api/agents/run/:agent', async (req, res) => {
   const state = loadState();
   const agentName = req.params.agent;
   let result = {};
-  
+
   try {
     switch (agentName) {
       case 'leads': result = await runLeadAgent(state); break;

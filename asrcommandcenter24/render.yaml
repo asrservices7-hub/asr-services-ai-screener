@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: asr-services-backend
+    env: docker
+    dockerFilePath: Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://asrservices24-ai.netlify.app,https://asrservices24.netlify.app,https://asrcommandcenter24.netlify.app

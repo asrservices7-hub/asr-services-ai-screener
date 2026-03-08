@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASR Services — Choose Your Plan</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+    <div class="mesh-backdrop"></div>
+    <div class="container">
+        <div id="navbar-container"></div>
+
+        <div class="page-hero">
+            <div class="text-center animate-fadeInUp" style="margin-bottom: 50px;">
+                <span class="badge badge-glow">
+                    <span class="badge-dot"></span>
+                    CHOOSE YOUR PLAN
+                </span>
+                <h1 style="margin-top: 16px;">Simple Predictable <span class="gradient-text">Pricing</span></h1>
+                <p class="subtitle">Pick the plan that fits your hiring needs. Pay once via UPI and start screening
+                    instantly.</p>
+            </div>
+
+            <!-- Pricing Grid -->
+            <div class="pricing-grid animate-fadeInUp animate-delay-1">
+
+                <!-- Basic -->
+                <div class="pricing-card">
+                    <div class="pricing-name">Basic</div>
+                    <div class="pricing-price"><span class="currency">₹</span>99</div>
+                    <div class="pricing-desc">Perfect for a single small role</div>
+                    <ul class="pricing-features">
+                        <li><span class="check">✓</span> 3 Resume Analyses</li>
+                        <li><span class="check">✓</span> Single + Bulk Mode</li>
+                        <li><span class="check">✓</span> CSV Export</li>
+                        <li><span class="check">✓</span> Skill Matching</li>
+                    </ul>
+                    <button class="btn btn-secondary btn-block" onclick="openPayment(99, 'Basic', 3)">Buy Basic</button>
+                </div>
+
+                <!-- Starter -->
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">MOST POPULAR</div>
+                    <div class="pricing-name">Starter</div>
+                    <div class="pricing-price"><span class="currency">₹</span>299</div>
+                    <div class="pricing-desc">Great for startups & small teams</div>
+                    <ul class="pricing-features">
+                        <li><span class="check">✓</span> 10 Resume Analyses</li>
+                        <li><span class="check">✓</span> Single + Bulk Mode</li>
+                        <li><span class="check">✓</span> CSV Export</li>
+                        <li><span class="check">✓</span> Skill Matching</li>
+                        <li><span class="check">✓</span> Priority Processing</li>
+                    </ul>
+                    <button class="btn btn-primary btn-block" onclick="openPayment(299, 'Starter', 10)">Buy
+                        Starter</button>
+                </div>
+
+                <!-- Pro -->
+                <div class="pricing-card">
+                    <div class="pricing-name">Pro</div>
+                    <div class="pricing-price"><span class="currency">₹</span>1999</div>
+                    <div class="pricing-desc">For high-volume hiring</div>
+                    <ul class="pricing-features">
+                        <li><span class="check">✓</span> 100 Resume Analyses</li>
+                        <li><span class="check">✓</span> Single + Bulk Mode</li>
+                        <li><span class="check">✓</span> CSV Export</li>
+                        <li><span class="check">✓</span> Skill Matching</li>
+                        <li><span class="check">✓</span> Dedicated Support</li>
+                    </ul>
+                    <button class="btn btn-secondary btn-block" onclick="openPayment(1999, 'Pro', 100)">Buy Pro</button>
+                </div>
+
+                <!-- Unlimited -->
+                <div class="pricing-card">
+                    <div class="pricing-name">Unlimited</div>
+                    <div class="pricing-price"><span class="currency">₹</span>4999</div>
+                    <div class="pricing-desc">Full access for 30 days</div>
+                    <ul class="pricing-features">
+                        <li><span class="check">✓</span> Unlimited Analyses</li>
+                        <li><span class="check">✓</span> Single + Bulk Mode</li>
+                        <li><span class="check">✓</span> CSV Export</li>
+                        <li><span class="check">✓</span> Skill Matching</li>
+                        <li><span class="check">✓</span> 30-Day Access</li>
+                    </ul>
+                    <button class="btn btn-secondary btn-block" onclick="openPayment(4999, 'Unlimited', 9999)">Buy
+                        Unlimited</button>
+                </div>
+            </div>
+
+            <!-- Trust Signals -->
+            <div class="text-center mt-3 animate-fadeInUp animate-delay-2">
+                <div
+                    style="display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; font-size: 0.85rem; color: var(--text-muted);">
+                    <span>🛡️ Secured by UPI</span>
+                    <span>⚡ Instant Activation</span>
+                    <span>🔄 <a href="#" id="openRefunder">Refund Policy</a></span>
+                </div>
+            </div>
+        </div>
+
+        <footer class="legal-footer">
+            <p>All payments are processed directly through your UPI app.<br>© 2026 ASR Services. All rights reserved.
+            </p>
+        </footer>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModalOverlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <h3 id="planName">Pay for Plan</h3>
+                    <p id="planPrice" style="color: var(--accent-primary); font-weight: 700;"></p>
+                </div>
+                <button class="modal-close" onclick="closePayment()">×</button>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div id="qrcode"
+                    style="display:inline-block; padding: 16px; background: white; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                </div>
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 12px;">Scan the QR code with any UPI
+                    app (GPay, PhonePe, Paytm)</p>
+            </div>
+
+            <a id="upiDeepLink" href="#" class="btn btn-primary btn-block mb-2">
+                📱 Pay with UPI App
+            </a>
+
+            <div style="border-top: 1px solid var(--border); padding-top: 20px;">
+                <div class="form-group">
+                    <label>Enter Transaction ID (UTR)</label>
+                    <input type="text" id="txnIdInput" class="form-input" placeholder="e.g. 123456789012">
+                </div>
+                <button id="confirmPayBtn" class="btn btn-success btn-block" disabled>
+                    ✅ I Have Paid — Activate My Session
+                </button>
+                <p id="paymentStatus"
+                    style="font-size: 0.82rem; color: var(--text-muted); text-align: center; margin-top: 12px;"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Don't redirect if not logged in — just render normally
+            await Utils.renderNavbar('navbar-container');
+
+            const txnInput = document.getElementById('txnIdInput');
+            const confirmBtn = document.getElementById('confirmPayBtn');
+            const statusEl = document.getElementById('paymentStatus');
+
+            txnInput.addEventListener('input', () => {
+                confirmBtn.disabled = txnInput.value.length < 10;
+            });
+
+            confirmBtn.addEventListener('click', async () => {
+                const orderId = window._currentOrderId;
+                const utr = txnInput.value.trim();
+                const session = await Utils.getSession();
+
+                if (!session || !session.email) {
+                    statusEl.textContent = '❌ Please log in again.';
+                    statusEl.style.color = 'var(--danger)';
+                    return;
+                }
+
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<span class="spinner" style="width:20px;height:20px;border-width:2px;"></span> Verifying...';
+                statusEl.textContent = '';
+
+                try {
+                    const result = await Utils.verifyPayment(orderId, utr, session.email);
+                    if (result.success) {
+                        statusEl.textContent = '✅ ' + (result.message || 'Payment verified!');
+                        statusEl.style.color = 'var(--success)';
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1500);
+                    } else {
+                        statusEl.textContent = '❌ ' + (result.error || 'Verification failed.');
+                        statusEl.style.color = 'var(--danger)';
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = '✅ I Have Paid — Activate My Session';
+                    }
+                } catch (err) {
+                    // Fallback: direct activation if backend is unavailable
+                    const amount = window._currentAmount;
+                    const credits = window._currentCredits;
+                    const success = await Utils.activatePayment(amount, credits);
+                    if (success) {
+                        statusEl.textContent = '✅ Payment activated!';
+                        statusEl.style.color = 'var(--success)';
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1500);
+                    } else {
+                        statusEl.textContent = '❌ Could not activate. Please try again.';
+                        statusEl.style.color = 'var(--danger)';
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = '✅ I Have Paid — Activate My Session';
+                    }
+                }
+            });
+
+            const refundLink = document.getElementById('openRefunder');
+            if (refundLink) {
+                refundLink.onclick = (e) => {
+                    e.preventDefault();
+                    Utils.showModal('Refund Policy', `
+                        <p>Our goal is your complete satisfaction. Please review our refund terms:</p>
+                        <ul>
+                            <li><strong>Session Points:</strong> Refunds are only applicable if credits were not used.</li>
+                            <li><strong>Technical Issues:</strong> If a screening fails due to a system error, we will credit your account or refund the amount.</li>
+                            <li><strong>Timeline:</strong> Refund requests must be made within 24 hours of payment.</li>
+                            <li><strong>Process:</strong> Contact support at support@asrservices24.ai with your Transaction ID.</li>
+                        </ul>
+                    `);
+                };
+            }
+        });
+
+        const UPI_ID = 'srijanbajpai24@ybl';
+        const MERCHANT_NAME = 'ASR Services';
+
+        async function openPayment(amount, name, credits) {
+            window._currentAmount = amount;
+            window._currentCredits = credits;
+            document.getElementById('planName').textContent = `Activate ${name} Plan`;
+            document.getElementById('planPrice').textContent = `Amount: ₹${amount}`;
+
+            const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount}&cu=INR&tn=${encodeURIComponent('ASR Services ' + name)}`;
+
+            document.getElementById('upiDeepLink').href = upiUrl;
+            const qrcodeEl = document.getElementById('qrcode');
+            qrcodeEl.innerHTML = '';
+            new QRCode(qrcodeEl, { text: upiUrl, width: 200, height: 200 });
+
+            // Create order via backend
+            try {
+                const session = await Utils.getSession();
+                if (session && session.email) {
+                    const order = await Utils.createOrder(session.email, name, amount, credits);
+                    if (order && order.id) {
+                        window._currentOrderId = order.id;
+                    }
+                }
+            } catch (e) {
+                console.log('Backend order creation fallback:', e);
+            }
+
+            document.getElementById('paymentModalOverlay').classList.add('active');
+        }
+
+        function closePayment() {
+            document.getElementById('paymentModalOverlay').classList.remove('active');
+            document.getElementById('paymentStatus').textContent = '';
+        }
+    </script>
+</body>
+
+</html>

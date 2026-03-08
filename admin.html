@@ -690,7 +690,7 @@
                 </div>
             </div>
             <div class="hdr-right">
-                <a href="index.html" class="nav-link">Public Website</a>
+                <a href="/" target="_blank" class="nav-link">Public Website</a>
                 <a href="#" class="nav-link" onclick="handleLogout()">Lock Portal</a>
                 <div class="status-pill" id="srv-status">
                     <div class="dot"></div>System Live
@@ -805,6 +805,12 @@
         <!-- Talent Database Tab -->
         <div class="tab-content" id="tab-candidates">
             <div class="table-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 class="royal-font" style="color:var(--gold)">Elite Talent Pool</h3>
+                    <button onclick="downloadDatabase()" class="btn-gold"
+                        style="width:auto; padding: 8px 20px; font-size: 0.8rem;">📥 Download Full Database
+                        (CSV)</button>
+                </div>
                 <table>
                     <thead>
                         <tr>
@@ -813,6 +819,7 @@
                             <th>Location</th>
                             <th>Exp.</th>
                             <th>AI Score</th>
+                            <th>AI Extraction Summary</th>
                             <th>Source</th>
                             <th>Status</th>
                         </tr>
@@ -892,10 +899,11 @@
     </div> <!-- End Wrap -->
 
     <script>
-        const API = 'https://asr-services-ai-screener.onrender.com';
+        const API = window.location.origin;
         const AGENTS_LIST = [
             { id: 'leads', name: 'Target Acquisition', desc: 'Finds actively hiring companies', icon: '🎯' },
             { id: 'outreach', name: 'Client Outreach', desc: 'Automated B2B email/WhatsApp pitches', icon: '📨' },
+            { id: 'revenue', name: 'Revenue Agent', desc: 'Managed Billing, UPI & Collections', icon: '💰' },
             { id: 'meetings', name: 'Meeting Closer', desc: 'Books HR calls to your Calendly', icon: '🤝' },
             { id: 'candidates', name: 'Mass Intake', desc: 'Pulls resumes from all channels', icon: '📥' },
             { id: 'parser', name: 'Neural Parser', desc: 'Reads & scores resumes 0-100', icon: '🧠' },
@@ -989,6 +997,10 @@
 
         // --- API Logic ---
         async function runAgent(id, name) {
+            if (id === 'revenue') {
+                window.open('revenue.html', '_blank');
+                return;
+            }
             const isAll = id === 'all';
             const btn = document.getElementById(isAll ? 'btn-run-all' : 'btn-' + id);
             const query = document.getElementById('match-query')?.value || 'BPO Lucknow';
@@ -1049,7 +1061,7 @@
                 if (type === 'leads') {
                     tbody.innerHTML = items.map(i => `<tr><td><strong>${i.company}</strong></td><td>${i.city}</td><td>${i.type}</td><td>${i.hr_contact}</td><td>${i.role_needed}</td><td><span class="badge b-gold">${i.salary_range}</span></td><td><span class="badge ${i.status === 'new' ? 'b-gold' : 'b-green'}">${i.status}</span></td></tr>`).join('');
                 } else if (type === 'candidates') {
-                    tbody.innerHTML = items.map(i => `<tr><td><strong>${i.name}</strong></td><td>${i.primary_skill}</td><td>${i.city}</td><td>${i.experience_years} yrs</td><td><span class="badge ${i.score >= 70 ? 'b-green' : 'b-gold'}">${i.score || 'N/A'}</span></td><td>${i.source}</td><td><span class="badge b-green">${i.status}</span></td></tr>`).join('');
+                    tbody.innerHTML = items.map(i => `<tr><td><strong>${i.name}</strong></td><td>${i.primary_skill}</td><td>${i.city}</td><td>${i.experience_years} yrs</td><td><span class="badge ${i.score >= 70 ? 'b-green' : 'b-gold'}">${i.score || 'N/A'}</span></td><td><small>${i.ai_summary || 'No extraction yet'}</small></td><td>${i.source}</td><td><span class="badge b-green">${i.status}</span></td></tr>`).join('');
                 } else if (type === 'meetings') {
                     tbody.innerHTML = items.map(i => `<tr><td><strong>${i.company}</strong></td><td>${i.hr}</td><td>${new Date(i.date).toLocaleDateString()}</td><td>${i.type}</td><td><span class="badge b-green">${i.status}</span></td></tr>`).join('');
                 }
@@ -1069,6 +1081,27 @@
                 logEvent('Semantic Matcher', `Found ${count} high-probability matches.`, true);
                 switchTab('candidates');
             } catch (e) { logEvent('Semantic Matcher', 'Matrix error: ' + e.message, false); }
+        }
+
+        async function downloadDatabase() {
+            logEvent('System', 'Preparing Database Export...', null);
+            try {
+                const res = await fetch(API + '/api/admin/download-db');
+                if (!res.ok) throw new Error('Download failed');
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `asr_talent_database_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                logEvent('System', 'Database Export Successful.', true);
+            } catch (e) {
+                logEvent('System', 'Export Failed: ' + e.message, false);
+                alert("Download failed. Ensure backend is running.");
+            }
         }
 
         // Initialize check

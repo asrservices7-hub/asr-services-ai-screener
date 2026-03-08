@@ -1655,7 +1655,7 @@
     // ══════════════════════════════════════════════════
     //  LIVE PRODUCTION DATA STORE (Render + Supabase)
     // ══════════════════════════════════════════════════
-    const API = 'https://asr-services-ai-screener.onrender.com';
+    const API = window.location.origin;
     let data = { transactions: [], settings: {}, invCounter: 1 };
 
     async function loadData() {

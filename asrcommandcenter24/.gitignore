@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment
+.env
+backend/.env
+
+# Databases (will be recreated on deploy)
+# *.db
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Test files
+test-*.js
+
+# Temp
+cloudflared
+frontend_deploy.zip
