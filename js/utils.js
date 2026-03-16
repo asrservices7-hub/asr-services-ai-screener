@@ -116,11 +116,12 @@ const Utils = {
     return session.credits || 0;
   },
 
-  async useCredit() {
+  async useCredit(amount = 1) {
     const session = await this.getSession();
     if (!session) return false;
     if (isAdmin(session.email)) return true;
-    const newCredits = Math.max(0, (session.credits || 0) - 1);
+    if ((session.credits || 0) < amount) return false;
+    const newCredits = Math.max(0, (session.credits || 0) - amount);
     session.credits = newCredits;
     localStorage.setItem('asr_session', JSON.stringify(session));
     try {
@@ -270,10 +271,9 @@ const Utils = {
     const session = await this.getSession();
     if (!session) { window.location.href = 'index.html'; return false; }
     if (isAdmin(session.email)) return true;
-    // Allow 1 free demo
     if ((session.credits || 0) > 0) return true;
-    if (!session.is_paid) { window.location.href = 'payment.html'; return false; }
-    return true;
+    window.location.href = 'payment.html';
+    return false;
   },
 
   /* ---------- Screenings ---------- */

@@ -30,7 +30,6 @@
             <!-- Pricing Grid -->
             <div class="pricing-grid animate-fadeInUp animate-delay-1">
 
-                <!-- Basic -->
                 <div class="pricing-card">
                     <div class="pricing-name">Basic</div>
                     <div class="pricing-price"><span class="currency">₹</span>99</div>
@@ -133,6 +132,11 @@
                 📱 Pay with UPI App
             </a>
 
+            <div id="manualUpiInfo" style="text-align:center; padding:16px; margin-bottom:16px; background:var(--accent-primary-light); border-radius:var(--radius-md); font-size:0.88rem; color:var(--text-secondary); line-height:1.8;">
+                <p style="margin-bottom:6px;"><strong>UPI ID:</strong> <code style="background:var(--bg-input);padding:4px 10px;border-radius:6px;user-select:all;font-size:0.95rem;">srijanbajpai24@ybl</code></p>
+                <p><strong>Amount:</strong> Click a plan above  •  <strong>Note:</strong> ASR Plan</p>
+            </div>
+
             <div style="border-top: 1px solid var(--border); padding-top: 20px;">
                 <div class="form-group">
                     <label>Enter Transaction ID (UTR)</label>
@@ -228,8 +232,9 @@
             }
         });
 
-        const UPI_ID = 'srijanbajpai24@ybl';
-        const MERCHANT_NAME = 'ASR Services';
+        // Payment constants — defined locally to guarantee availability
+        const PAY_UPI_ID = 'srijanbajpai24@ybl';
+        const PAY_MERCHANT = 'ASR Services';
 
         async function openPayment(amount, name, credits) {
             window._currentAmount = amount;
@@ -237,14 +242,31 @@
             document.getElementById('planName').textContent = `Activate ${name} Plan`;
             document.getElementById('planPrice').textContent = `Amount: ₹${amount}`;
 
-            const upiUrl = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount}&cu=INR&tn=${encodeURIComponent('ASR Services ' + name)}`;
+            const upiUrl = `upi://pay?pa=${PAY_UPI_ID}&pn=${encodeURIComponent(PAY_MERCHANT)}&am=${amount}&cu=INR&tn=${encodeURIComponent('ASR ' + name + ' Plan')}`;
 
-            document.getElementById('upiDeepLink').href = upiUrl;
+            // Deep link
+            const deepLinkEl = document.getElementById('upiDeepLink');
+            deepLinkEl.href = upiUrl;
+
+            // Manual UPI ID display
+            const manualEl = document.getElementById('manualUpiInfo');
+            if (manualEl) {
+                manualEl.innerHTML = `
+                    <p style="margin-bottom:6px;"><strong>UPI ID:</strong> <code style="background:var(--bg-input);padding:4px 10px;border-radius:6px;user-select:all;font-size:0.95rem;">${PAY_UPI_ID}</code></p>
+                    <p><strong>Amount:</strong> ₹${amount}  •  <strong>Note:</strong> ASR ${name} Plan</p>
+                `;
+            }
+
+            // QR Code
             const qrcodeEl = document.getElementById('qrcode');
             qrcodeEl.innerHTML = '';
-            new QRCode(qrcodeEl, { text: upiUrl, width: 200, height: 200 });
+            try {
+                new QRCode(qrcodeEl, { text: upiUrl, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+            } catch (e) {
+                qrcodeEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">QR code could not be generated.<br>Use the UPI ID above to pay manually.</p>';
+            }
 
-            // Create order via backend
+            // Create order via backend (non-blocking)
             try {
                 const session = await Utils.getSession();
                 if (session && session.email) {
@@ -263,6 +285,8 @@
         function closePayment() {
             document.getElementById('paymentModalOverlay').classList.remove('active');
             document.getElementById('paymentStatus').textContent = '';
+            document.getElementById('txnIdInput').value = '';
+            document.getElementById('confirmPayBtn').disabled = true;
         }
     </script>
 </body>

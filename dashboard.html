@@ -210,7 +210,7 @@
     <script src="js/screener.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            if (!await Utils.requireLogin()) return;
+            if (!await Utils.requirePayment()) return;
             await Utils.renderNavbar('navbar-container');
 
             const elements = {
@@ -313,6 +313,16 @@
 
             // Start
             elements.start.onclick = async () => {
+                const fileCount = files.length;
+                const credits = await Utils.getCredits();
+
+                if (credits < fileCount) {
+                    elements.error.innerHTML = `Not enough credits. You have ${credits} credits, but selected ${fileCount} resumes. <a href="payment.html" style="color:var(--accent-primary);">Purchase a plan</a>`;
+                    elements.error.classList.add('visible');
+                    setTimeout(() => window.location.href = 'payment.html', 3000);
+                    return;
+                }
+
                 // Auto-capture any lingering text in skill input
                 if (elements.skillInput.value.trim()) {
                     const parts = elements.skillInput.value.split(/[,;]+/).map(s => s.trim()).filter(s => s && !skills.includes(s));
@@ -320,7 +330,20 @@
                     elements.skillInput.value = '';
                     renderTags();
                 }
+                
                 elements.progOverlay.classList.add('active');
+                
+                // Deduct credits
+                const success = await Utils.useCredit(fileCount);
+                if (!success) {
+                     elements.progOverlay.classList.remove('active');
+                     elements.error.textContent = `Failed to process credits.`;
+                     elements.error.classList.add('visible');
+                     return;
+                }
+
+                // Update UI credits
+                await Utils.renderNavbar('navbar-container');
                 try {
                     const config = {
                         jdText: elements.jdInput.value,
