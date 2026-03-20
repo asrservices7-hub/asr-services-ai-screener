@@ -74,19 +74,26 @@ async function runLeadAgent(state) {
     const jobs = response.data.jobs || [];
     let discovered = 0;
 
-    const indianCities = ['Delhi NCR', 'Mumbai', 'Bangalore', 'Hyderabad', 'Pune', 'Chennai'];
-
     for (const job of jobs) {
       if (!state.leads.find(l => l.company === job.company_name)) {
-        const cleanName = job.company_name.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const email = `hr@${cleanName}.com`;
-        const phone = `+91-${Math.floor(Math.random() * 90000 + 10000)}${Math.floor(Math.random() * 90000 + 10000)}`;
-        const assignedCity = indianCities[Math.floor(Math.random() * indianCities.length)];
+        let domain = `${job.company_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
+        let logo = '';
+        
+        // Attempt to fetch real company domain from Clearbit Autocomplete
+        try {
+          const cbRes = await axios.get(`https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(job.company_name)}`);
+          if (cbRes.data && cbRes.data.length > 0) {
+            domain = cbRes.data[0].domain;
+            logo = cbRes.data[0].logo;
+          }
+        } catch (e) { /* fallback to guess */ }
 
+        const email = `careers@${domain}`;
+        
         const lead = {
-          id: `L${Date.now()}-${discovered}`, company: job.company_name, city: assignedCity,
-          type: job.category, hr_contact: 'HR Dept', email: email, phone: phone, role_needed: job.title, job_url: job.url,
-          discovered_at: new Date().toISOString(), status: 'new'
+          id: `L${Date.now()}-${discovered}`, company: job.company_name, city: job.candidate_required_location || 'Remote',
+          type: job.category, hr_contact: 'HR Dept', email: email, phone: 'Requires Apollo.io B2B API Key', role_needed: job.title, job_url: job.url,
+          discovered_at: new Date().toISOString(), status: 'new', logo_url: logo
         };
         state.leads.unshift(lead);
         discovered++;
@@ -145,51 +152,27 @@ async function runOutreachAgent(state) {
   return { sent };
 }
 
-// 3. CANDIDATE INTAKE: Fetches real random data and stores in SQLite + Supabase
+// 3. CANDIDATE INTAKE: Strictly processes REAL candidates from database or uploads (No more fake RandomUser API)
 async function runCandidateAgent(state) {
   try {
-    const response = await axios.get('https://randomuser.me/api/?results=3&nat=in');
-    const users = response.data.results;
+    // We are no longer pulling fake randomuser.me data.
+    // In a rock-solid production environment, this agent queries Supabase or the local parsed Resumes folder.
     let count = 0;
-    const skills = ['BPO Voice', 'Customer Support', 'Data Entry', 'HR Recruiter', 'Sales Executive', 'Digital Marketing'];
-    const indianCities = ['Delhi NCR', 'Mumbai', 'Bangalore', 'Hyderabad', 'Pune', 'Chennai'];
-
-    for (const u of users) {
-      const assignedCity = indianCities[Math.floor(Math.random() * indianCities.length)];
-      
-      const c = {
-        id: `C${Date.now()}-${count}`,
-        name: `${u.name.first} ${u.name.last}`,
-        city: assignedCity,
-        primary_skill: skills[Math.floor(Math.random() * skills.length)],
-        experience_years: Math.floor(Math.random() * 5) + 1,
-        score: 0,
-        source: 'API Scrape',
-        email: u.email,
-        phone: u.phone,
-        status: 'active',
-        date_added: new Date().toISOString(),
-        ai_scored: false,
-        ai_summary: 'Pending AI extraction...'
-      };
-
-      // Save to SQLite (using compatible columns)
-      const sql = `INSERT INTO candidates (candidate_id, name, city, primary_skill, total_experience_yrs, overall_score, source, phone, status, date_added) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-      db.run(sql, [c.id, c.name, c.city, c.primary_skill, c.experience_years, c.score, c.source, c.phone, c.status, c.date_added]);
-
-      state.candidates.unshift(c);
-      if (supabase) {
-        const { error } = await supabase.from('asr_candidates').insert([c]);
-        if (error) console.error('Supabase error inserting candidate:', error.message);
+    
+    // Simulate pulling 0 new candidates unless real resumes are uploaded
+    if (supabase) {
+      const { data, error } = await supabase.from('asr_candidates').select('*').eq('ai_scored', false);
+      if (!error && data) {
+        count = data.length;
+        // Here the Parser Agent would normally extract their real numbers and emails from the PDF
       }
-      count++;
     }
-    state.stats.total_candidates += count;
-    addLog(state, 'Candidate Intake', `Pulled ${count} candidates and saved to database`, 'success');
+
+    addLog(state, 'Candidate Intake', `Scanned Database: Found ${count} real unprocessed uploaded resumes.`, 'success');
     return { count };
   } catch (e) {
     console.error(e);
-    addLog(state, 'Candidate Intake', `Failed to pull candidates: ${e.message}`, 'error');
+    addLog(state, 'Candidate Intake', `Failed to access real candidate DB: ${e.message}`, 'error');
     return { count: 0 };
   }
 }
