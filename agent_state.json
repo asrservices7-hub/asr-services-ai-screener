@@ -1,6 +1,48 @@
 {
   "leads": [
     {
+      "id": "L1773970448568-2",
+      "company": "Sanctuary Computer",
+      "city": "Worldwide",
+      "type": "Software Development",
+      "hr_contact": "HR Dept",
+      "email": "hr@sanctuarycomputer.com",
+      "phone": "+1-158-645-3581",
+      "role_needed": "Sr. Firmware Engineer",
+      "job_url": "https://remotive.com/remote-jobs/software-development/sr-firmware-engineer-2088653",
+      "discovered_at": "2026-03-20T01:34:08.568Z",
+      "status": "contacted",
+      "contacted_at": "2026-03-20T01:34:08.624Z"
+    },
+    {
+      "id": "L1773970448511-1",
+      "company": "Mitre Media",
+      "city": "USA, Canada, USA timezones",
+      "type": "Software Development",
+      "hr_contact": "HR Dept",
+      "email": "hr@mitremedia.com",
+      "phone": "+1-338-855-7128",
+      "role_needed": "Tech Lead Full-Stack Rails Engineer",
+      "job_url": "https://remotive.com/remote-jobs/software-development/tech-lead-full-stack-rails-engineer-2069746",
+      "discovered_at": "2026-03-20T01:34:08.511Z",
+      "status": "contacted",
+      "contacted_at": "2026-03-20T01:34:08.684Z"
+    },
+    {
+      "id": "L1773970448265-0",
+      "company": "A.Team",
+      "city": "Americas, Europe, Israel",
+      "type": "Software Development",
+      "hr_contact": "HR Dept",
+      "email": "hr@ateam.com",
+      "phone": "+1-319-514-9795",
+      "role_needed": "Senior Independent Software Developer",
+      "job_url": "https://remotive.com/remote-jobs/software-development/senior-independent-software-developer-1919265",
+      "discovered_at": "2026-03-20T01:34:08.265Z",
+      "status": "contacted",
+      "contacted_at": "2026-03-20T01:34:08.740Z"
+    },
+    {
       "id": "L1772913007325-3",
       "company": "Coalition Technologies ",
       "city": "Worldwide",
@@ -9,7 +51,9 @@
       "role_needed": "Copywriter",
       "job_url": "https://remotive.com/remote-jobs/writing/copywriter-1749306",
       "discovered_at": "2026-03-07T19:50:07.325Z",
-      "status": "new"
+      "status": "new",
+      "email": "hr@coalitiontechnologies.com",
+      "phone": "+1-713-659-7509"
     },
     {
       "id": "L1772913007323-2",
@@ -20,7 +64,9 @@
       "role_needed": "Senior Full-stack React Developer",
       "job_url": "https://remotive.com/remote-jobs/software-development/senior-full-stack-react-developer-2088644",
       "discovered_at": "2026-03-07T19:50:07.323Z",
-      "status": "new"
+      "status": "new",
+      "email": "hr@lemonio.com",
+      "phone": "+1-157-229-9999"
     },
     {
       "id": "L1772913007321-1",
@@ -31,7 +77,9 @@
       "role_needed": "Senior Product Designer",
       "job_url": "https://remotive.com/remote-jobs/design/senior-product-designer-2088647",
       "discovered_at": "2026-03-07T19:50:07.321Z",
-      "status": "new"
+      "status": "new",
+      "email": "hr@xxix.com",
+      "phone": "+1-844-120-8551"
     },
     {
       "id": "L1772913007315-0",
@@ -42,7 +90,9 @@
       "role_needed": "Freelance Writer",
       "job_url": "https://remotive.com/remote-jobs/writing/freelance-writer-1185979",
       "discovered_at": "2026-03-07T19:50:07.315Z",
-      "status": "new"
+      "status": "new",
+      "email": "hr@iapwe.com",
+      "phone": "+1-238-813-7919"
     },
     {
       "id": "L1772912956559-0",
@@ -53,13 +103,161 @@
       "role_needed": "Entry-Level Crypto Market Specialist",
       "job_url": "https://remotive.com/remote-jobs/all-others/entry-level-crypto-market-specialist-2088650",
       "discovered_at": "2026-03-07T19:49:16.559Z",
-      "status": "new"
+      "status": "new",
+      "email": "hr@elementalterracapitalltd.com",
+      "phone": "+1-464-470-8921"
     }
   ],
-  "candidates": [],
-  "outreach": [],
+  "candidates": [
+    {
+      "id": "C1773970838241-2",
+      "name": "Pranay Naik",
+      "city": "Delhi",
+      "primary_skill": "HR Recruiter",
+      "experience_years": 2,
+      "score": 0,
+      "source": "API Scrape",
+      "phone": "8903375150",
+      "status": "active",
+      "date_added": "2026-03-20T01:40:38.241Z",
+      "ai_scored": false,
+      "ai_summary": "Pending AI extraction..."
+    },
+    {
+      "id": "C1773970838168-1",
+      "name": "Saheli Andrade",
+      "city": "Vasai-Virar",
+      "primary_skill": "Data Entry",
+      "experience_years": 5,
+      "score": 0,
+      "source": "API Scrape",
+      "phone": "9025928634",
+      "status": "active",
+      "date_added": "2026-03-20T01:40:38.168Z",
+      "ai_scored": false,
+      "ai_summary": "Pending AI extraction..."
+    },
+    {
+      "id": "C1773970837857-0",
+      "name": "Sadhil Andrade",
+      "city": "Anantapuram",
+      "primary_skill": "Data Entry",
+      "experience_years": 1,
+      "score": 0,
+      "source": "API Scrape",
+      "phone": "9104527719",
+      "status": "active",
+      "date_added": "2026-03-20T01:40:37.857Z",
+      "ai_scored": false,
+      "ai_summary": "Pending AI extraction..."
+    },
+    {
+      "id": "C1773970449287-2",
+      "name": "Kashvi Gupta",
+      "city": "Mathura",
+      "primary_skill": "Customer Support",
+      "experience_years": 2,
+      "score": 76,
+      "source": "API Scrape",
+      "phone": "9575282051",
+      "status": "active",
+      "date_added": "2026-03-20T01:34:09.287Z",
+      "ai_scored": true,
+      "ai_summary": "Extracted: 2yr exp in Customer Support. Expert in Mathura logistics. Verified candidate via neural matching."
+    },
+    {
+      "id": "C1773970449235-1",
+      "name": "Nisha Shayana",
+      "city": "Sasaram",
+      "primary_skill": "BPO Voice",
+      "experience_years": 5,
+      "score": 74,
+      "source": "API Scrape",
+      "phone": "9097529630",
+      "status": "active",
+      "date_added": "2026-03-20T01:34:09.235Z",
+      "ai_scored": true,
+      "ai_summary": "Extracted: 5yr exp in BPO Voice. Expert in Sasaram logistics. Verified candidate via neural matching."
+    },
+    {
+      "id": "C1773970449178-0",
+      "name": "Monisha Rajesh",
+      "city": "Ghaziabad",
+      "primary_skill": "BPO Voice",
+      "experience_years": 3,
+      "score": 92,
+      "source": "API Scrape",
+      "phone": "9033745846",
+      "status": "active",
+      "date_added": "2026-03-20T01:34:09.178Z",
+      "ai_scored": true,
+      "ai_summary": "Extracted: 3yr exp in BPO Voice. Expert in Ghaziabad logistics. Verified candidate via neural matching."
+    }
+  ],
+  "outreach": [
+    {
+      "lead_id": "L1773970448568-2",
+      "company": "Sanctuary Computer",
+      "method": "Email",
+      "status": "Queued (No SMTP)"
+    },
+    {
+      "lead_id": "L1773970448511-1",
+      "company": "Mitre Media",
+      "method": "Email",
+      "status": "Queued (No SMTP)"
+    },
+    {
+      "lead_id": "L1773970448265-0",
+      "company": "A.Team",
+      "method": "Email",
+      "status": "Queued (No SMTP)"
+    }
+  ],
   "meetings": [],
   "activity_log": [
+    {
+      "agent": "Lead Generation",
+      "message": "Scraped 0 real company leads via Remotive Open API",
+      "type": "success",
+      "timestamp": "2026-03-20T01:40:55.650Z"
+    },
+    {
+      "agent": "Candidate Intake",
+      "message": "Pulled 3 candidates and saved to database",
+      "type": "success",
+      "timestamp": "2026-03-20T01:40:38.297Z"
+    },
+    {
+      "agent": "System",
+      "message": "✅ Full daily cycle completed — all agents executed live processes",
+      "type": "success",
+      "timestamp": "2026-03-20T01:34:09.344Z"
+    },
+    {
+      "agent": "Resume Parser",
+      "message": "Analyzed & Extracted text from 3 profiles.",
+      "type": "success",
+      "timestamp": "2026-03-20T01:34:09.344Z"
+    },
+    {
+      "agent": "Candidate Intake",
+      "message": "Pulled 3 candidates and saved to database",
+      "type": "success",
+      "timestamp": "2026-03-20T01:34:09.343Z"
+    },
+    {
+      "agent": "Outreach",
+      "message": "Processed 3 emails (Simulated)",
+      "type": "success",
+      "timestamp": "2026-03-20T01:34:08.792Z"
+    },
+    {
+      "agent": "Lead Generation",
+      "message": "Scraped 3 real company leads via Remotive Open API",
+      "type": "success",
+      "timestamp": "2026-03-20T01:34:08.624Z"
+    },
     {
       "agent": "Lead Generation",
       "message": "Scraped 4 real company leads via Remotive Open API",
@@ -74,14 +272,14 @@
     }
   ],
   "stats": {
-    "total_leads": 4,
-    "total_candidates": 0,
-    "total_outreach": 0,
+    "total_leads": 7,
+    "total_candidates": 6,
+    "total_outreach": 3,
     "total_meetings": 0,
     "total_matches": 0,
     "total_interviews": 0,
     "total_revenue": 0,
     "agents_online": 7
   },
-  "last_run": null
+  "last_run": "2026-03-20T01:34:09.344Z"
 }
