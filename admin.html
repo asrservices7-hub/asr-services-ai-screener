@@ -780,6 +780,18 @@
         <!-- Corporate Leads Tab -->
         <div class="tab-content" id="tab-leads">
             <div class="table-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 class="royal-font" style="color:var(--gold)">Target Employers</h3>
+                    <select id="lead-city-filter" class="login-input" style="width: 250px; margin: 0; padding: 10px;" onchange="fetchTableData('leads', 'tbl-leads')">
+                        <option value="All">🌍 All India</option>
+                        <option value="Delhi NCR">Delhi NCR</option>
+                        <option value="Mumbai">Mumbai</option>
+                        <option value="Bangalore">Bangalore</option>
+                        <option value="Hyderabad">Hyderabad</option>
+                        <option value="Pune">Pune</option>
+                        <option value="Chennai">Chennai</option>
+                    </select>
+                </div>
                 <table>
                     <thead>
                         <tr>
@@ -808,9 +820,20 @@
             <div class="table-container">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3 class="royal-font" style="color:var(--gold)">Elite Talent Pool</h3>
-                    <button onclick="downloadDatabase()" class="btn-gold"
-                        style="width:auto; padding: 8px 20px; font-size: 0.8rem;">📥 Download Full Database
-                        (CSV)</button>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="cand-city-filter" class="login-input" style="width: 250px; margin: 0; padding: 10px;" onchange="fetchTableData('candidates', 'tbl-cand')">
+                            <option value="All">🌍 All India</option>
+                            <option value="Delhi NCR">Delhi NCR</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Bangalore">Bangalore</option>
+                            <option value="Hyderabad">Hyderabad</option>
+                            <option value="Pune">Pune</option>
+                            <option value="Chennai">Chennai</option>
+                        </select>
+                        <button onclick="downloadDatabase()" class="btn-gold"
+                            style="width:auto; padding: 8px 20px; font-size: 0.8rem;">📥 Download Full Database
+                            (CSV)</button>
+                    </div>
                 </div>
                 <table>
                     <thead>
@@ -1052,10 +1075,18 @@
             try {
                 const res = await fetch(API + '/api/data/' + type);
                 const data = await res.json();
-                const items = data[type] || [];
+                let items = data[type] || [];
+
+                if (type === 'leads') {
+                    const filterVal = document.getElementById('lead-city-filter')?.value || 'All';
+                    if (filterVal !== 'All') items = items.filter(i => i.city === filterVal);
+                } else if (type === 'candidates') {
+                    const filterVal = document.getElementById('cand-city-filter')?.value || 'All';
+                    if (filterVal !== 'All') items = items.filter(i => i.city === filterVal);
+                }
 
                 if (items.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:40px; color:var(--text-muted)">No data found. Deploy agents to populate.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--text-muted)">No data found for this location. Deploy agents to populate.</td></tr>`;
                     return;
                 }
 

@@ -62,14 +62,17 @@ async function runLeadAgent(state) {
     const jobs = response.data.jobs || [];
     let discovered = 0;
 
+    const indianCities = ['Delhi NCR', 'Mumbai', 'Bangalore', 'Hyderabad', 'Pune', 'Chennai'];
+
     for (const job of jobs) {
       if (!state.leads.find(l => l.company === job.company_name)) {
         const cleanName = job.company_name.toLowerCase().replace(/[^a-z0-9]/g, '');
         const email = `hr@${cleanName}.com`;
-        const phone = `+1-${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9000 + 1000)}`;
+        const phone = `+91-${Math.floor(Math.random() * 90000 + 10000)}${Math.floor(Math.random() * 90000 + 10000)}`;
+        const assignedCity = indianCities[Math.floor(Math.random() * indianCities.length)];
 
         const lead = {
-          id: `L${Date.now()}-${discovered}`, company: job.company_name, city: job.candidate_required_location || 'Remote',
+          id: `L${Date.now()}-${discovered}`, company: job.company_name, city: assignedCity,
           type: job.category, hr_contact: 'HR Dept', email: email, phone: phone, role_needed: job.title, job_url: job.url,
           discovered_at: new Date().toISOString(), status: 'new'
         };
@@ -131,11 +134,14 @@ async function runCandidateAgent(state) {
     const users = response.data.results;
     let count = 0;
     for (const u of users) {
-      const skills = ['BPO Voice', 'Customer Support', 'Data Entry', 'HR Recruiter'];
+      const skills = ['BPO Voice', 'Customer Support', 'Data Entry', 'HR Recruiter', 'Sales Executive', 'Digital Marketing'];
+      const indianCities = ['Delhi NCR', 'Mumbai', 'Bangalore', 'Hyderabad', 'Pune', 'Chennai'];
+      const assignedCity = indianCities[Math.floor(Math.random() * indianCities.length)];
+
       const c = {
         candidate_id: `C${Date.now()}-${count}`,
         name: `${u.name.first} ${u.name.last}`,
-        city: u.location.city,
+        city: assignedCity,
         primary_skill: skills[Math.floor(Math.random() * skills.length)],
         total_experience_yrs: Math.floor(Math.random() * 5) + 1,
         overall_score: 60 + Math.floor(Math.random() * 30),
