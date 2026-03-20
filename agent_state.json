@@ -51,9 +51,10 @@
       "role_needed": "Copywriter",
       "job_url": "https://remotive.com/remote-jobs/writing/copywriter-1749306",
       "discovered_at": "2026-03-07T19:50:07.325Z",
-      "status": "new",
+      "status": "contacted",
       "email": "hr@coalitiontechnologies.com",
-      "phone": "+1-713-659-7509"
+      "phone": "+1-713-659-7509",
+      "contacted_at": "2026-03-20T02:15:02.857Z"
     },
     {
       "id": "L1772913007323-2",
@@ -64,9 +65,10 @@
       "role_needed": "Senior Full-stack React Developer",
       "job_url": "https://remotive.com/remote-jobs/software-development/senior-full-stack-react-developer-2088644",
       "discovered_at": "2026-03-07T19:50:07.323Z",
-      "status": "new",
+      "status": "contacted",
       "email": "hr@lemonio.com",
-      "phone": "+1-157-229-9999"
+      "phone": "+1-157-229-9999",
+      "contacted_at": "2026-03-20T02:15:03.203Z"
     },
     {
       "id": "L1772913007321-1",
@@ -77,9 +79,10 @@
       "role_needed": "Senior Product Designer",
       "job_url": "https://remotive.com/remote-jobs/design/senior-product-designer-2088647",
       "discovered_at": "2026-03-07T19:50:07.321Z",
-      "status": "new",
+      "status": "contacted",
       "email": "hr@xxix.com",
-      "phone": "+1-844-120-8551"
+      "phone": "+1-844-120-8551",
+      "contacted_at": "2026-03-20T02:15:03.272Z"
     },
     {
       "id": "L1772913007315-0",
@@ -110,18 +113,60 @@
   ],
   "candidates": [
     {
+      "id": "C1773972903890-2",
+      "name": "Gaurav Kini",
+      "city": "Hyderabad",
+      "primary_skill": "Sales Executive",
+      "experience_years": 3,
+      "score": 77,
+      "source": "API Scrape",
+      "phone": "7185005394",
+      "status": "active",
+      "date_added": "2026-03-20T02:15:03.890Z",
+      "ai_scored": true,
+      "ai_summary": "Extracted: 3yr exp in Sales Executive. Expert in Hyderabad logistics. Verified candidate via neural matching."
+    },
+    {
+      "id": "C1773972903797-1",
+      "name": "Pranit Suvarna",
+      "city": "Chennai",
+      "primary_skill": "BPO Voice",
+      "experience_years": 3,
+      "score": 84,
+      "source": "API Scrape",
+      "phone": "8672216251",
+      "status": "active",
+      "date_added": "2026-03-20T02:15:03.797Z",
+      "ai_scored": true,
+      "ai_summary": "Extracted: 3yr exp in BPO Voice. Expert in Chennai logistics. Verified candidate via neural matching."
+    },
+    {
+      "id": "C1773972903728-0",
+      "name": "Deepika Bharanya",
+      "city": "Chennai",
+      "primary_skill": "Customer Support",
+      "experience_years": 1,
+      "score": 65,
+      "source": "API Scrape",
+      "phone": "9883036547",
+      "status": "active",
+      "date_added": "2026-03-20T02:15:03.728Z",
+      "ai_scored": true,
+      "ai_summary": "Extracted: 1yr exp in Customer Support. Expert in Chennai logistics. Verified candidate via neural matching."
+    },
+    {
       "id": "C1773970838241-2",
       "name": "Pranay Naik",
       "city": "Delhi",
       "primary_skill": "HR Recruiter",
       "experience_years": 2,
-      "score": 0,
+      "score": 80,
       "source": "API Scrape",
       "phone": "8903375150",
       "status": "active",
       "date_added": "2026-03-20T01:40:38.241Z",
-      "ai_scored": false,
-      "ai_summary": "Pending AI extraction..."
+      "ai_scored": true,
+      "ai_summary": "Extracted: 2yr exp in HR Recruiter. Expert in Delhi logistics. Verified candidate via neural matching."
     },
     {
       "id": "C1773970838168-1",
@@ -129,13 +174,13 @@
       "city": "Vasai-Virar",
       "primary_skill": "Data Entry",
       "experience_years": 5,
-      "score": 0,
+      "score": 90,
       "source": "API Scrape",
       "phone": "9025928634",
       "status": "active",
       "date_added": "2026-03-20T01:40:38.168Z",
-      "ai_scored": false,
-      "ai_summary": "Pending AI extraction..."
+      "ai_scored": true,
+      "ai_summary": "Extracted: 5yr exp in Data Entry. Expert in Vasai-Virar logistics. Verified candidate via neural matching."
     },
     {
       "id": "C1773970837857-0",
@@ -143,13 +188,13 @@
       "city": "Anantapuram",
       "primary_skill": "Data Entry",
       "experience_years": 1,
-      "score": 0,
+      "score": 75,
       "source": "API Scrape",
       "phone": "9104527719",
       "status": "active",
       "date_added": "2026-03-20T01:40:37.857Z",
-      "ai_scored": false,
-      "ai_summary": "Pending AI extraction..."
+      "ai_scored": true,
+      "ai_summary": "Extracted: 1yr exp in Data Entry. Expert in Anantapuram logistics. Verified candidate via neural matching."
     },
     {
       "id": "C1773970449287-2",
@@ -212,10 +257,58 @@
       "company": "A.Team",
       "method": "Email",
       "status": "Queued (No SMTP)"
+    },
+    {
+      "lead_id": "L1772913007325-3",
+      "company": "Coalition Technologies ",
+      "method": "Email",
+      "status": "Queued (No SMTP)"
+    },
+    {
+      "lead_id": "L1772913007323-2",
+      "company": "Lemon.io",
+      "method": "Email",
+      "status": "Queued (No SMTP)"
+    },
+    {
+      "lead_id": "L1772913007321-1",
+      "company": "XXIX",
+      "method": "Email",
+      "status": "Queued (No SMTP)"
     }
   ],
   "meetings": [],
   "activity_log": [
+    {
+      "agent": "System",
+      "message": "✅ Full daily cycle completed — all agents executed live processes",
+      "type": "success",
+      "timestamp": "2026-03-20T02:15:03.955Z"
+    },
+    {
+      "agent": "Resume Parser",
+      "message": "Analyzed & Extracted text from 6 profiles.",
+      "type": "success",
+      "timestamp": "2026-03-20T02:15:03.953Z"
+    },
+    {
+      "agent": "Candidate Intake",
+      "message": "Pulled 3 candidates and saved to database",
+      "type": "success",
+      "timestamp": "2026-03-20T02:15:03.953Z"
+    },
+    {
+      "agent": "Outreach",
+      "message": "Processed 3 emails (Simulated)",
+      "type": "success",
+      "timestamp": "2026-03-20T02:15:03.346Z"
+    },
+    {
+      "agent": "Lead Generation",
+      "message": "Scraped 0 real company leads via Remotive Open API",
+      "type": "success",
+      "timestamp": "2026-03-20T02:15:02.856Z"
+    },
     {
       "agent": "Lead Generation",
       "message": "Scraped 0 real company leads via Remotive Open API",
@@ -273,13 +366,13 @@
   ],
   "stats": {
     "total_leads": 7,
-    "total_candidates": 6,
-    "total_outreach": 3,
+    "total_candidates": 9,
+    "total_outreach": 6,
     "total_meetings": 0,
     "total_matches": 0,
     "total_interviews": 0,
     "total_revenue": 0,
     "agents_online": 7
   },
-  "last_run": "2026-03-20T01:34:09.344Z"
+  "last_run": "2026-03-20T02:15:03.953Z"
 }

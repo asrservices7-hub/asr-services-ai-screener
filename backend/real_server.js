@@ -146,6 +146,7 @@ async function runCandidateAgent(state) {
         total_experience_yrs: Math.floor(Math.random() * 5) + 1,
         overall_score: 60 + Math.floor(Math.random() * 30),
         source: 'API Scrape',
+        email: u.email,
         phone: u.phone,
         status: 'active',
         date_added: new Date().toISOString()

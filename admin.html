@@ -839,6 +839,7 @@
                     <thead>
                         <tr>
                             <th>Candidate Name</th>
+                            <th>Contact Details</th>
                             <th>Primary Skill</th>
                             <th>Location</th>
                             <th>Exp.</th>
@@ -1093,7 +1094,7 @@
                 if (type === 'leads') {
                     tbody.innerHTML = items.map(i => `<tr><td><strong>${i.company}</strong></td><td style="font-size: 0.8rem;"><span style="color:var(--gold); display:block; margin-bottom: 4px;">✉️ ${i.email || 'Pending...'}</span><span style="color:var(--text-muted); display:block;">📞 ${i.phone || 'Pending...'}</span></td><td>${i.city}</td><td>${i.type}</td><td>${i.hr_contact}</td><td>${i.role_needed}</td><td><span class="badge b-gold">${i.salary_range || 'N/A'}</span></td><td><span class="badge ${i.status === 'new' ? 'b-gold' : 'b-green'}">${i.status}</span></td></tr>`).join('');
                 } else if (type === 'candidates') {
-                    tbody.innerHTML = items.map(i => `<tr><td><strong>${i.name}</strong></td><td>${i.primary_skill}</td><td>${i.city}</td><td>${i.experience_years} yrs</td><td><span class="badge ${i.score >= 70 ? 'b-green' : 'b-gold'}">${i.score || 'N/A'}</span></td><td><small>${i.ai_summary || 'No extraction yet'}</small></td><td>${i.source}</td><td><span class="badge b-green">${i.status}</span></td></tr>`).join('');
+                    tbody.innerHTML = items.map(i => `<tr><td><strong>${i.name}</strong></td><td style="font-size: 0.8rem;"><span style="color:var(--gold); display:block; margin-bottom: 4px;">✉️ ${i.email || 'Pending...'}</span><span style="color:var(--text-muted); display:block;">📞 ${i.phone || 'Pending...'}</span></td><td>${i.primary_skill}</td><td>${i.city}</td><td>${i.experience_years} yrs</td><td><span class="badge ${i.score >= 70 ? 'b-green' : 'b-gold'}">${i.score || 'N/A'}</span></td><td><small>${i.ai_summary || 'No extraction yet'}</small></td><td>${i.source}</td><td><span class="badge b-green">${i.status}</span></td></tr>`).join('');
                 } else if (type === 'meetings') {
                     tbody.innerHTML = items.map(i => `<tr><td><strong>${i.company}</strong></td><td>${i.hr}</td><td>${new Date(i.date).toLocaleDateString()}</td><td>${i.type}</td><td><span class="badge b-green">${i.status}</span></td></tr>`).join('');
                 }
